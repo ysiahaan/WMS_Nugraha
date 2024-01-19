@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Reffiler</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+
+    <!-- swal -->
+    <link
+      rel="stylesheet"
+      href="./asset/@sweetalert2/theme-material-ui/material-ui.css"
+    />
+    <script src="./asset/sweetalert2/dist/sweetalert2.all.js"></script>
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      document.addEventListener("deviceready", onDeviceReady, false);
+      var kodebarang = GetURLParameter("kodebrg"),
+        getData = [],
+        idreffil = GetURLParameter("idreffil"),
+        kodebarangkarton = "";
+
+      function onDeviceReady() {
+        document.getElementById("input2").value = 0;
+        get();
+      }
+      //----------------------------------------------------------------------------------------------------------------------------------------
+
+      const get = () => {
+        const url =
+          UrlApi + "/nug_api/getLokasiDariKodeKarton?kodebrg=" + kodebarang;
+        fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Terjadi kesalahan dalam respons.");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log(data);
+            getData = data.data.rows;
+            if (getData[0]["stok"] == 0) {
+              Swal.fire({
+                title: "Oops...",
+                text: "Stok Karton 0 PERBARUI STOK",
+                icon: "warning",
+                confirmButtonText: "Back",
+              }).then((result) => {
+                document.getElementById("input1").focus();
+              });
+            } else {
+              Swal.fire({
+                title: "Info.",
+                text: "Stok Tersedia",
+                icon: "info",
+                confirmButtonText: "Back",
+              }).then((result) => {
+                document.getElementById("input1").focus();
+              });
+            }
+            view();
+            // Lakukan sesuatu dengan getData
+          })
+          .catch((error) => {
+            console.error("Terjadi kesalahan:", error);
+          });
+      };
+
+      const view = () => {
+        getData.forEach((item) => {
+          document.getElementById("nama").innerHTML = item.namabrg;
+          document.getElementById("kodebrg").innerHTML = item.kodebarangkarton;
+          if (item.kodebarangkarton) kodebarangkarton = item.kodebarangkarton;
+        });
+        const t = document.querySelector("#bodylistBarang");
+        t.innerHTML = "";
+        getData.forEach((item, i) => {
+          var row = document.createElement("tr"),
+            div1 = document.createElement("div"),
+            div2 = document.createElement("div"),
+            cell1 = document.createElement("th"),
+            cell2 = document.createElement("th"),
+            cell3 = document.createElement("th");
+          cell1.classList.add("cardRefLok"),
+            cell2.classList.add("cardRefStok"),
+            div1.classList.add("cardDivRef"),
+            cell3.classList.add("cardRefStok");
+          (cell1.innerHTML = `${item.lokasi}`),
+            (cell2.innerHTML = `${item.jumlahbarang} Q`),
+            (cell3.innerHTML = `TOTAL STOK ${item.stok} Q`);
+          div1.appendChild(cell1),
+            div1.appendChild(cell2),
+            row.appendChild(div1),
+            t.appendChild(row);
+        });
+        //alert(`TUJUAN KARTONAN : ${getData[0]["lokasi"]}`);
+      };
+
+      const check = () => {
+        if (event.keyCode == 13) {
+          var lokasi = document.getElementById("input1").value,
+            cek = "";
+          cek = lokasi.indexOf(".");
+          if (lokasi == "") {
+            Swal.fire({
+              title: "Oops...",
+              text: "Lokasi Masih Kosong",
+              icon: "warning",
+              confirmButtonText: "Back",
+            });
+            document.getElementById("input1").focus();
+            document.getElementById("input1").value = "";
+            return;
+          }
+          if (cek != 1) {
+            Swal.fire({
+              title: "Oops...",
+              text: "Scan Bukan Lokasi",
+              icon: "warning",
+              confirmButtonText: "Back",
+            });
+            document.getElementById("input1").focus();
+            document.getElementById("input1").value = "";
+            return;
+          }
+
+          document.getElementById("input2").value = "";
+          document.getElementById("input2").focus();
+        }
+      };
+
+      const put = () => {
+        let xhr = new XMLHttpRequest();
+        var kodebar = getData[0]["kodebarang"],
+          lokasi = document.getElementById("input1").value,
+          jmlkarton = document.getElementById("input2").value;
+        if (jmlkarton == 0 || jmlkarton == "") {
+          Swal.fire({
+            title: "Oops...",
+            text: "Input Jumlah Karton",
+            icon: "warning",
+            confirmButtonText: "Back",
+          });
+          document.getElementById("input2").focus();
+          return;
+        }
+
+        if (jmlkarton > getData[0]["stok"]) {
+          Swal.fire({
+            title: "Oops...",
+            text: "Stok Tidak Cukup",
+            icon: "warning",
+            confirmButtonText: "Back",
+          });
+          document.getElementById("input2").focus();
+          document.getElementById("input2").value = 0;
+          return;
+        }
+        if (kodebarangkarton == "Tidak Ada Barcode") kodebarangkarton = "";
+
+        const url =
+          UrlApi +
+          `/nug_api/getBrgDariLokKarton?namalogin=${user}&lokasi=${lokasi}&kodebrg=${kodebar}&jml=${jmlkarton}&idrefill=${idreffil}&kodebrgkarton=${kodebarangkarton}`;
+        fetch(url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Terjadi kesalahan dalam respons.");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            var err = data.error,
+              msg = data.msg;
+            if (err == "true") {
+              Swal.fire({
+                title: "Oops...",
+                text: msg,
+                icon: "warning",
+                confirmButtonText: "Back",
+              });
+              return;
+            }
+            Swal.fire({
+              title: "Success.",
+              text: msg,
+              icon: "success",
+              confirmButtonText: "Ok",
+            }).then((result) => {
+              location.href =
+                "ref_listTugas.html?namalogin=" + user + "&level=" + level;
+            });
+
+            // Lakukan sesuatu dengan getData
+          })
+          .catch((error) => {
+            console.error("Terjadi kesalahan:", error);
+          });
+      };
+
+      function exeDashboard() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeInput() {
+        location.href =
+          "ref_inputLocationLepasan.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeListTugas() {
+        location.href =
+          "ref_listTugas.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeListPalet() {
+        location.href =
+          "ref_listPalet.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeBack() {
+        location.href =
+          "ref_listTugas.html?namalogin=" + user + "&level=" + level;
+      }
+      function exePindahLokasi() {
+        location.href =
+          "pindahLokasi.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeRefresh() {
+        //location.href="scan_barang.html?namalogin="+user+"&level="+level
+        document.location.reload(true);
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 14px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <a onclick="exeBack()"
+          ><i
+            class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+            style="font-size: 25px"
+          ></i
+        ></a>
+        <div>
+          <h5 style="line-height: 20px; color: white">REFFILER</h5>
+          <h6 style="line-height: 0px; color: white">Scan Lokasi Kartonan</h6>
+        </div>
+      </div>
+      <div>
+        <a class="" data-bs-toggle="dropdown" href="">
+          <i
+            class="fas fa-bars fa-sm fa-fw mr-3 text-white"
+            style="font-size: 28px"
+          ></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="exeDashboard()">
+              <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>dashboard
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeInput()">
+              <i class="far fa-edit fa-sm fa-fw m-2 text-black"></i>Input Task
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item active" onclick="exeListTugas()">
+              <i class="fas fa-clipboard-list fa-sm fa-fw m-2 text-black"></i
+              >List Tugas
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeListPalet()">
+              <i class="fas fa-dolly-flatbed fa-sm fa-fw m-2 text-black"></i
+              >List Palet
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeRefresh()">
+              <i class="fas fa-sync fa-sm fa-fw m-2 text-black"></i>Refresh
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+    </div>
+
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 100%;
+        gap: 30px;
+        padding-bottom: 20px;
+        text-align: left;
+        margin: auto;
+      "
+    >
+      <div
+        style="
+          box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+          border-radius: 8px;
+        "
+      >
+        <div>
+          <div class="card-body">
+            <div class="table-responsive-md">
+              <label
+                for="input1"
+                class="form-label font-weight-bold text-primary"
+                style="font-size: 18px"
+                >Info Barang:</label
+              >
+              <div>
+                <p
+                  id="nama"
+                  style="
+                    font-size: 18px;
+                    color: black;
+                    font-weight: 600;
+                    margin: 0;
+                    padding: 0;
+                  "
+                ></p>
+                <p
+                  id="kodebrg"
+                  style="
+                    font-size: 16px;
+                    color: black;
+                    font-weight: 600;
+                    margin: 0;
+                    padding: 7px 0;
+                  "
+                ></p>
+
+                <div style="border: none; text-align: -webkit-center">
+                  <table id="listBarang" style="width: 100%">
+                    <thead></thead>
+                    <tbody
+                      id="bodylistBarang"
+                      style="display: grid; padding: 0 20px; gap: 10px"
+                    ></tbody>
+                  </table>
+                </div>
+                <!-- <p
+                  id="tujuan"
+                  style="
+                    font-size: 16px;
+                    color: black;
+                    font-weight: 600;
+                    margin: 0 0 0 40px;
+                    padding: 0 0 0 10px;
+                    background: antiquewhite;
+                    letter-spacing: 8px;
+                  "
+                ></p>
+                <p
+                  id="stok"
+                  style="
+                    font-size: 15px;
+                    color: #636363;
+                    font-weight: 800;
+                    margin: 0 20px 0 0;
+                    padding: 0;
+                    text-align: end;
+                  "
+                ></p> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 0 25px">
+      <input
+        type="text"
+        class="form-control"
+        id="input1"
+        placeholder="Enter Lokasi Kartonan"
+        name="input1"
+        style="text-align: center"
+        onkeyup="check()"
+      />
+    </div>
+    <div style="text-align: center">
+      <label
+        for="inpu2"
+        style="
+          font-size: 15px;
+          font-weight: 800;
+          color: black;
+          padding-top: 5px;
+        "
+        >JUMLAH KARTON</label
+      >
+      <input type="tel" id="input2" name="input2" class="styleInput4" />
+    </div>
+    <div class="d-flex mt-3 mb-1" style="justify-content: center">
+      <div class="justify-content-start">
+        <button
+          onclick="put()"
+          type="button"
+          id="simpanLokasi"
+          class="btn btn-primary btn-m"
+          style="padding: 8px 46px"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </body>
+  <script>
+    // Menggunakan JavaScript untuk menangani event focus
+    document.getElementById("input2").addEventListener("focus", function () {
+      // Mengatur nilai input menjadi 0
+      this.value = "";
+    });
+    document.getElementById("input2").addEventListener("blur", function () {
+      if (this.value === "") {
+        this.value = "0";
+      }
+    });
+  </script>
+</html>

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title></title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="js/jquery.autocomplete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      document.addEventListener("deviceready", onDeviceReady, false);
+
+      var dictData = "";
+      var nodeliv = GetURLParameter("nodel");
+
+      function onDeviceReady() {
+        document.getElementById("nodeliv").innerHTML = nodeliv;
+        document.getElementById("scanSO").focus();
+
+        showBarang();
+      }
+
+      function exeDashboard() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeBack() {
+        location.href =
+          "deliveryNew_home.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeRefresh() {
+        //location.href="scan_barang.html?namalogin="+user + "&level=" +level
+        document.location.reload(true);
+      }
+
+      function showBarang() {
+        document.getElementById("scanSO").disabled = false;
+        document.getElementById("scanSO").value = "";
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "GET",
+          UrlApi + "/nug_api/getSelesaiScanDelivery?nodel=" + nodeliv
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "nodel=" + nodeliv;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            alert(msg);
+            return;
+          }
+          dictData = obj.data.rows;
+          var c = 1;
+
+          var theTabel = document.getElementById("listBarang");
+          theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+          var tbody = document.createElement("tbody");
+          theTabel.appendChild(tbody);
+
+          dictData.forEach((item, value) => {
+            var row = document.createElement("tr");
+            var cell1 = document.createElement("td");
+            var cell2 = document.createElement("td");
+            var cell3 = document.createElement("td");
+            var cell4 = document.createElement("td");
+            var cell5 = document.createElement("td");
+            var cell6 = document.createElement("td");
+            var cell7 = document.createElement("td");
+            // ======== STYLE
+
+            if (item.kolimasuk == item.jmlKoli) {
+              cell1.classList.add("styleKolom");
+              cell2.classList.add("styleKolom");
+              cell3.classList.add("styleKolom");
+              cell4.classList.add("styleKolom");
+              cell5.classList.add("styleKolom");
+              cell6.classList.add("styleKolom");
+            }
+            //cell1.classList.add("style");
+            // ======== Get Data
+            // dictData[index]["nodel"]
+            // ======== Show Data
+            cell1.innerHTML =
+              "<button class='stybuttonList' onclick='getRdsalesorderList(" +
+              value +
+              ")' data-bs-toggle='modal' data-bs-target='#myModal' style='color: black; font-size: 14px'>" +
+              c +
+              "</button>";
+            cell2.innerHTML =
+              "<button class='stybuttonList' onclick='getRdsalesorderList(" +
+              value +
+              ")' data-bs-toggle='modal' data-bs-target='#myModal' style='color: black; font-size: 14px'>" +
+              item.nodelivery +
+              "</button>";
+            cell3.innerHTML =
+              "<button class='stybuttonList' onclick='getRdsalesorderList(" +
+              value +
+              ")' data-bs-toggle='modal' data-bs-target='#myModal' style='color: black; font-size: 14px'>" +
+              item.noso +
+              "</button>";
+            cell4.innerHTML =
+              "<button class='stybuttonList' onclick='getRdsalesorderList(" +
+              value +
+              ")' data-bs-toggle='modal' data-bs-target='#myModal' style='color: black; font-size: 14px'>" +
+              item.namacus +
+              "</button>";
+            cell5.innerHTML =
+              "<button class='stybuttonList' onclick='getRdsalesorderList(" +
+              value +
+              ")' data-bs-toggle='modal' data-bs-target='#myModal' style='color: black; font-size: 14px'>" +
+              item.jmlKoli +
+              "</button>";
+            cell6.innerHTML =
+              "<button class='stybuttonList' onclick='getRdsalesorderList(" +
+              value +
+              ")' data-bs-toggle='modal' data-bs-target='#myModal' style='color: black; font-size: 14px'>" +
+              item.kolimasuk +
+              "</button>";
+            cell7.innerHTML =
+              "<button class='stybuttonList' onclick='getRdsalesorderList(" +
+              value +
+              ")' data-bs-toggle='modal' data-bs-target='#myModal' style='color: black; font-size: 14px'>" +
+              item.area +
+              "</button>";
+            row.appendChild(cell1);
+            row.appendChild(cell2);
+            row.appendChild(cell3);
+            row.appendChild(cell4);
+            row.appendChild(cell5);
+            row.appendChild(cell6);
+            row.appendChild(cell7);
+            tbody.appendChild(row);
+            c++;
+          });
+        };
+      }
+
+      const check = () => {
+        if (event.keyCode == 13) {
+          document.getElementById("scanSO").disabled = true;
+          const so = document.getElementById("scanSO").value,
+            noso = so.substring(0, 9),
+            kol = so.substring(10, so.length),
+            i = dictData.findIndex(function (dictData) {
+              console.log(dictData.noso, noso, kol);
+              return dictData.noso === noso;
+            });
+          -1 !== i ? getDataList() : addNoso(noso);
+        }
+      };
+
+      const addNoso = (noso) => {
+        console.log(noso, nodeliv);
+        if (confirm("Tambah Nomor So Baru?")) {
+        } else {
+          document.getElementById("scanSO").value = "";
+          document.getElementById("scanSO").disabled = false;
+          return;
+        }
+        // tambah noso ke delivery ini
+        const url = `${UrlApi}/nug_api/pindahDeliv`,
+          tempDataToSend = {
+            noso: noso,
+            nodel: nodeliv,
+          };
+
+        console.log(tempDataToSend);
+        fetch(url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(tempDataToSend),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Gagal melakukan permintaan: " + response.status);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            query = data.data;
+            if (query) {
+              alert("SO Berhasil Di Pindah, Silahkan Scan Ulang SO !");
+              showBarang();
+              return;
+            }
+            document.getElementById("scanSO").disabled = false;
+            alert(data.msg);
+
+            //if (err == "true") {
+            //  alert("Barang Sudah Ada Di Tugas Reffil");
+            //}
+            //read();
+          })
+          .catch((error) => {
+            alert("Request Gagal");
+            console.error("Terjadi kesalahan:", error);
+          });
+        return;
+      };
+
+      function getDataList() {
+        if (event.keyCode == 13) {
+          var so = document.getElementById("scanSO").value;
+          var lengthSO = so.length;
+          var nomorso = so.substring(0, 9);
+          var kol = so.substring(10, lengthSO);
+          let xhr = new XMLHttpRequest();
+          xhr.open(
+            "PUT",
+            UrlApi +
+              "/nug_api/getNosoDeliv?nodel=" +
+              nodeliv +
+              "&noso=" +
+              nomorso +
+              "&kol=" +
+              kol
+          );
+          xhr.setRequestHeader(
+            "Content-Type",
+            "application/x-www-form-urlencoded"
+          );
+          let data = "nodel=" + nodeliv;
+          //console.log(data)
+          xhr.send(data);
+          xhr.onload = function () {
+            console.log(this.responseText);
+            var obj = JSON.parse(this.responseText);
+            var err = obj.error;
+            var msg = obj.msg;
+            if (err == "true") {
+              alert(msg);
+              document.getElementById("scanSO").disabled = false;
+              clearField();
+              return;
+            }
+            var getData = obj.data.rows;
+            clearField();
+            showBarang();
+          };
+        }
+      }
+
+      function getFullItem() {
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "PUT",
+          UrlApi + "/nug_api/getFullItemDelivery?nodel=" + nodeliv
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "nodel=" + nodeliv;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            alert(msg);
+            document.getElementById("scanSO").value = "";
+            document.getElementById("scanSO").disabled = false;
+            return;
+          }
+
+          //alert(msg);
+          $("#myModalSelesai").modal("toggle");
+          //location.href =
+          //  "deliveryNew_home.html?namalogin=" + user + "&level=" + level;
+        };
+      }
+
+      function getRdsalesorderList(value) {
+        var noso = dictData[value]["noso"];
+        console.log(noso);
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", UrlApi + "/nug_api/getRdSalesKoliList?noso=" + noso);
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "nodel=" + nodeliv;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            document.getElementById("scanSO").value = "";
+            alert(msg);
+            return;
+          }
+          var getData = obj.data.rows;
+          var c = 1;
+          var theTabel = document.getElementById("listBarangModel");
+          theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+          var tbody = document.createElement("tbody");
+          theTabel.appendChild(tbody);
+          getData.forEach((item) => {
+            var row = document.createElement("tr");
+            var cell1 = document.createElement("td");
+            var cell2 = document.createElement("td");
+            var cell3 = document.createElement("td");
+
+            if (item.deliv > 0) {
+              cell1.classList.add("styleKolom");
+              cell2.classList.add("styleKolom");
+              cell3.classList.add("styleKolom");
+            }
+
+            cell1.innerHTML = c;
+            cell2.innerHTML = noso;
+            cell3.innerHTML = item.stat1;
+
+            row.appendChild(cell1);
+            row.appendChild(cell2);
+            row.appendChild(cell3);
+            tbody.appendChild(row);
+            c++;
+          });
+        };
+      }
+
+      function clearField() {
+        document.getElementById("scanSO").disabled = false;
+        document.getElementById("scanSO").value = "";
+        document.getElementById("scanSO").focus();
+      }
+
+      function cancelPutData() {
+        document.getElementById("asisten").value = "";
+        document.getElementById("kodetruk").value = "";
+        document.getElementById("driver").value = "";
+        document.getElementById("area").value = "";
+        document.getElementById("scanSO").value = "";
+      }
+
+      function putData() {
+        var asisten = document.getElementById("asisten").value;
+        var kodetruk = document.getElementById("kodetruk").value;
+        var driver = document.getElementById("driver").value;
+        var area = document.getElementById("area").value;
+
+        if (asisten == "" || kodetruk == "" || driver == "" || area == "") {
+          alert("Isi Semua Field [!]");
+          return;
+        }
+
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "PUT",
+          UrlApi +
+            "/nug_api/getNoDelivery?nodel=" +
+            nodeliv +
+            "&kodtruk=" +
+            kodetruk +
+            "&driver=" +
+            driver +
+            "&asisten=" +
+            asisten +
+            "&area=" +
+            area +
+            "&operator=" +
+            user
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          alert("No Delivery Siap Kirim [!]");
+          location.href =
+            "deliveryNew_home.html?namalogin=" + user + "&level=" + level;
+          return;
+        };
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 14px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <a onclick="exeBack()"
+          ><i
+            class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+            style="font-size: 25px"
+          ></i
+        ></a>
+        <div>
+          <h5 style="line-height: 20px; color: white">DELIVERY</h5>
+          <h6 style="line-height: 0px; color: white">List No Delivery</h6>
+        </div>
+      </div>
+      <div>
+        <a class="" data-bs-toggle="dropdown" href="">
+          <i
+            class="fas fa-bars fa-sm fa-fw mr-3 text-white"
+            style="font-size: 28px"
+          ></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="exeDashboard()">
+              <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>dashboard
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item active" onclick="exeHome()">
+              <i class="far fa-edit fa-sm fa-fw m-2 text-black"></i>Home
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeRefresh()">
+              <i class="fas fa-sync fa-sm fa-fw m-2 text-black"></i>Refresh
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+    </div>
+
+    <!-- =================== =================== ================= ================ BODY -->
+
+    <p id="nodeliv" class="styleSO"></p>
+
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 80%;
+        text-align: center;
+        justify-content: center;
+        margin: auto;
+      "
+      class="mt-5 mb-4"
+    >
+      <input
+        type="text"
+        class="form-control"
+        id="scanSO"
+        placeholder="SCAN SO"
+        style="text-align: center"
+        name="scanSO"
+        autofocus
+        onkeyup="check()"
+      />
+    </div>
+
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 80%;
+        text-align: center;
+        justify-content: center;
+        margin: auto;
+      "
+      class="mb-4"
+    >
+      <button
+        onclick="getFullItem()"
+        type="button"
+        id="selesai"
+        class="btn btn-success btn-m"
+      >
+        SELESAI
+      </button>
+    </div>
+
+    <div class="card-body">
+      <div class="table-responsive-md">
+        <table class="table" id="listBarang">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>No Delivery</th>
+              <th>Noso</th>
+              <th>Customer</th>
+              <th>Koli</th>
+              <th>Koli Masuk</th>
+              <th>Area</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal" id="myModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Data Delivery Koli</h4>
+          </div>
+
+          <div class="card-body">
+            <div class="table-responsive-md">
+              <table class="table" id="listBarangModel">
+                <thead>
+                  <tr>
+                    <th style="vertical-align: middle">No</th>
+                    <th style="vertical-align: middle">Noso</th>
+                    <th style="vertical-align: middle">Koli</th>
+                    <!-- <th style="vertical-align:middle">Terlokasi</th> -->
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-danger"
+              data-bs-dismiss="modal"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal" id="myModalSelesai">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Input Data Pengiriman</h4>
+          </div>
+
+          <div class="card-body">
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 100%;
+                gap: 10px;
+                padding: 10px 10px;
+                text-align: left;
+                margin: auto;
+              "
+            >
+              <div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 30% 70%;
+                    padding: 12px 6px;
+                    text-align: left;
+                    margin: auto;
+                  "
+                >
+                  <label
+                    for="kodetruk"
+                    class="form-label font-weight-bold text-primary mt-1"
+                    >Truck Code</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="kodetruk"
+                    placeholder=""
+                    name="kodetruk"
+                  />
+                </div>
+
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 30% 70%;
+                    padding: 12px 6px;
+                    text-align: left;
+                    margin: auto;
+                  "
+                >
+                  <label
+                    for="driver"
+                    class="form-label font-weight-bold text-primary mt-1"
+                    >Driver</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="driver"
+                    placeholder=""
+                    name="driver"
+                  />
+                </div>
+
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 30% 70%;
+                    padding: 12px 6px;
+                    text-align: left;
+                    margin: auto;
+                  "
+                >
+                  <label
+                    for="asisten"
+                    class="form-label font-weight-bold text-primary mt-1"
+                    >Assistant</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="asisten"
+                    placeholder=""
+                    name="asisten"
+                  />
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 30% 70%;
+                    padding: 12px 6px;
+                    text-align: left;
+                    margin: auto;
+                  "
+                >
+                  <label
+                    for="area"
+                    class="form-label font-weight-bold text-primary mt-1"
+                    >Area</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="area"
+                    placeholder=""
+                    name="area"
+                  />
+                </div>
+              </div>
+
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-danger"
+                  data-bs-dismiss="modal"
+                  onclick="cancelPutData()"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onclick="putData()"
+                  class="btn btn-primary"
+                  data-bs-dismiss="modal"
+                >
+                  Selesai
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <!-- <script>
+        $(document).ready(function () {
+            
+          // let cariCus = document.getElementById("namaCus").value;
+          $("#searchsupp").autocomplete({
+            serviceUrl: UrlApi + "/nug_api/getSupplierAutoComFromNota",   // Kode php untuk prosesing data
+            dataType: "JSON",           // Tipe data JSON
+            onSelect: function (suggestion) {
+              $("#namaSup").val("" + suggestion.value);
+              $("#kodeSup").val("" + suggestion.data);
+            }
+            
+          });
+        });
+      </script> -->
+</html>

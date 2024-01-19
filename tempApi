@@ -1,0 +1,198 @@
+// API ====================================================================================================================
+
+let xhr = new XMLHttpRequest();
+xhr.open("GET", UrlApi + "/nug_api/getNoDelivery");
+xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+let data = "";
+//console.log(data)
+xhr.send(data);
+xhr.onload = function () {
+  console.log(this.responseText);
+  var obj = JSON.parse(this.responseText);
+  var getData = obj.data.rows;
+};
+
+// fetch
+const url = UrlApi + "/nug_api/newReffil?lokasi=" + name;
+
+fetch(url, {
+  method: "GET",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded",
+  },
+})
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error("Terjadi kesalahan dalam respons.");
+    }
+    return response.json();
+  })
+  .then((data) => {
+    console.log(data);
+    const getData = data.data.rows;
+    // Lakukan sesuatu dengan getData
+  })
+  .catch((error) => {
+    console.error("Terjadi kesalahan:", error);
+  });
+
+const tempDataToSend = {
+  kodebarang: kodebar,
+  lokasi: lokasi,
+  jumlahbarang: jmlDrop,
+  operator: user,
+};
+
+console.log(tempDataToSend);
+fetch(url, {
+  method: "PUT",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded",
+  },
+  body: JSON.stringify(tempDataToSend),
+})
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error("Gagal melakukan permintaan: " + response.status);
+    }
+    return response.json();
+  })
+  .then((data) => {
+    document.getElementById("input1").value = "";
+    document.getElementById("input2").value = "";
+    document.getElementById("input1").focus();
+    viewDrop();
+  })
+  .catch((error) => {
+    console.error("Terjadi kesalahan:", error);
+  });
+
+const url3 = `${UrlApi}/nug_api/inDariTopedToDSO`;
+const requestBody = new URLSearchParams({
+  noso: noso,
+  namabarang: namabrg,
+  hargabarang: hargabrg,
+  jumlahbarang: jmlpick,
+  kodebarang: kodebrg,
+  lokasi: lokasi,
+  namalogin: user,
+  iddstoklokasi: iddstoklokasi,
+});
+
+fetch(url, {
+  method: "POST" / "PUT",
+  headers: {
+    "Content-Type": "application/x-www-form-urlencoded",
+  },
+  body: requestBody.toString(),
+})
+  .then((response) => {
+    if (!response.ok) {
+      throw new Error("Gagal melakukan permintaan: " + response.status);
+    }
+    return response.json();
+  })
+  .then((data) => {
+    var dataMain = data.data.rows;
+    masukTabel();
+  })
+  .catch((error) => {
+    console.error("Terjadi kesalahan:", error);
+  });
+
+// forEach ====================================================================================================================
+
+// RELOAD tabel
+var theTabel = document.getElementById("listBarang");
+theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+var tbody = document.createElement("tbody");
+theTabel.appendChild(tbody);
+
+// ADD Tabel
+var theTabel = document.getElementById("tabelUser");
+tbody = theTabel.getElementsByTagName("tbody")[0];
+
+getData.forEach((item, index) => {
+  var row = document.createElement("tr");
+  var cell1 = document.createElement("td");
+  var cell2 = document.createElement("td");
+  var cell3 = document.createElement("td");
+  var cell4 = document.createElement("td");
+  cell4.classList.add("test");
+  cell1.innerHTML = isiData[i]["namabrg"];
+  cell2.innerHTML = isiData[i]["kodebrg"];
+  cell3.innerHTML = isiData[i]["lokasi"];
+  cell4.innerHTML =
+    "<a onclick='ambilBarang(" +
+    i +
+    ")' style='font-size:28px; color:blue'><i class='far fa-share-square'></i></a>";
+  row.appendChild(cell1);
+  row.appendChild(cell2);
+  row.appendChild(cell3);
+  row.appendChild(cell4);
+  tbody.appendChild(row);
+});
+
+// ICON DELETE and EDIT
+cell5.innerHTML =
+  "<a onclick='hapusBarang(" +
+  i +
+  ")' style='font-size:28px;'><i class='far fa-trash-alt' style='color:red'></i></a>";
+cell6.innerHTML =
+  "<a onclick='editBarang(" +
+  i +
+  ")' style='font-size:28px;'><i class='fas fa-edit' style='color:blue'></i></a>";
+
+// Find ====================================================================================================================
+var so = document.getElementById("scanSO").value;
+dictData.forEach((item) => {
+  //dictData = Data dict yang ter isi
+  var dictDataSODeliver = dictData?.find((val) => so == item.noso)?.noso;
+  if (so == item.noso) {
+    console.log(so, "===", dictDataSODeliver);
+    return;
+  }
+});
+
+//Get ALL Data ====================================================================================================================
+dictData = getData.map((value) => {
+  return {
+    id: value.idddel,
+    nodel: value.nodelivery,
+    noso: value.noso,
+    cus: value.namacus,
+    koli: value.jmlKoli,
+    area: value.area,
+    sales: value.sales,
+  }; // ngisi semua data
+});
+
+// Find and Add ====================================================================================================================
+dictData.forEach((item) => {
+  var getNomorSO = dictData?.find((val) => nomorso == item.noso)?.noso;
+  if (nomorso == item.noso) {
+    dictDataNoso[item.idx] = dictData[item.idx];
+  }
+});
+
+// function untuk mencari data yang sama dari array
+getDictJumlah = isiData.reduce((acc, item) => {
+  const existingItem = acc.find(
+    (i) => i.kodebarang.trim() === item.kodebarang.trim()
+  );
+  if (existingItem) {
+    existingItem.jumlahbarang += item.jumlahbarang;
+  } else {
+    acc.push(item);
+  }
+  return acc;
+}, []);
+
+console.log(getDictJumlah);
+
+clearField = () => {
+  const inputElements = document.querySelectorAll("input");
+  inputElements.forEach((inputElement) => {
+    inputElement.value = "";
+  });
+};

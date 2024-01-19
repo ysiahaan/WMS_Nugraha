@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Dashboard</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      document.addEventListener("deviceready", onDeviceReady, false);
+
+      function onDeviceReady() {
+        document.getElementById("namaUser").innerHTML = user;
+      }
+
+      function exeRefiller() {
+        location.href =
+          "ref_inputLocationLepasan.html?namalogin=" + user + "&level=" + level;
+      }
+      function exePicking() {
+        location.href =
+          "picking_scanSO.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeSalesOrder() {
+        location.href =
+          "salesOrder_1.html?namalogin=" + user + "&level=" + level;
+      }
+      function exePacking() {
+        location.href =
+          "packing_scanSO.html?namalogin=" + user + "&level=" + level;
+      }
+      function exePurchasing() {
+        location.href =
+          "PO_daftarList.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeToped() {
+        location.href =
+          "tokped_inputData.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeInbound() {
+        location.href =
+          "Inbound_daftarInbound.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeInboundSJ() {
+        location.href =
+          "InboundSJ_list.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeStokOpname() {
+        location.href =
+          "SO_scanLokasiKarton.html?namalogin=" +
+          user +
+          "&satuan=1&namasatuan=1" +
+          "&level=" +
+          level;
+      }
+      function exeLogout() {
+        if (confirm("Confirm Logout")) {
+          location.href = "index.html";
+        } else {
+          return false;
+        }
+      }
+      function exeStokOpnameL() {
+        location.href =
+          "SO_scanLokasiKarton.html?namalogin=" +
+          user +
+          "&satuan=0&namasatuan=0" +
+          "&level=" +
+          level;
+      }
+      function exePindahLokasi() {
+        location.href =
+          "pindahLokasi.html?namalogin=" + user + "&level=" + level;
+      }
+      function exePindahLokasiKarton() {
+        location.href =
+          "pindahLokasiKarton.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeDelivery() {
+        location.href = "delivery.html?namalogin=" + user + "&level=" + level;
+      }
+      function exePindahLokasiJumlah() {
+        location.href =
+          "pindahLokasiPerJumlah.html?namalogin=" + user + "&level=" + level;
+      }
+      function exePenerimaanBarang() {
+        location.href =
+          "penerimaan_home.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeDeliveryNew() {
+        location.href =
+          "deliveryNew_home.html?namalogin=" + user + "&level=" + level;
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 14px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <i
+          class="fas fa-user fa-sm fa-fw m-2 text-white"
+          style="font-size: 25px"
+        ></i>
+        <div>
+          <h5 style="line-height: 20px; color: white">DASHBOARD IGN</h5>
+          <h6 style="line-height: 0px; color: white">
+            Welcome <a id="namaUser"></a>
+          </h6>
+        </div>
+      </div>
+      <a onclick="exeLogout()"
+        ><i
+          class="fas fa fa-sign-out fa-sm fa-fw m-2 text-white"
+          style="font-size: 28px"
+        ></i
+      ></a>
+    </div>
+
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 50% 50%;
+        gap: 20px;
+        padding: 30px 24px;
+        text-align: center;
+        margin: auto;
+      "
+    >
+      <a class="nav-link" onclick="exePicking()" id="picking" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fa-boxes mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">Picking</div>
+        </div>
+      </a>
+      <a class="nav-link" onclick="exePacking()" id="packing" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i class="fas fa-box mb-2" style="font-size: 35px; color: black"></i>
+          <div style="color: black">Packing</div>
+        </div>
+      </a>
+      <!-- <a class="nav-link" onclick="exeSalesOrder()">
+            <div style="padding:20px;  box-shadow: 2px 6px 10px 2px rgb(215, 215, 215); border-radius:8px;">
+                <i class="fas fa-box mb-2" style="font-size:35px; color:black"></i>
+              <div style="color:black">
+              Sales Order
+              </div>
+            </div>
+        </a> -->
+      <a class="nav-link" onclick="exeRefiller()" id="reffiler" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fas fa-dolly mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">Reffiler</div>
+        </div>
+      </a>
+      <a class="nav-link" onclick="exeStokOpname()" id="soK" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fas fa-clipboard-list mb-2"
+            style="font-size: 35px; color: rgb(255, 0, 0)"
+          ></i>
+          <div style="color: rgb(255, 0, 0)">CC Kartonan</div>
+        </div>
+      </a>
+      <a class="nav-link" onclick="exeStokOpnameL()" id="soL" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fas fa-clipboard-list mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">CC Lepasan</div>
+        </div>
+      </a>
+      <a
+        class="nav-link"
+        onclick="exePindahLokasiKarton()"
+        id="pindahlokasiK"
+        hidden
+      >
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fa fa-exchange mb-2"
+            style="font-size: 35px; color: rgb(255, 0, 0)"
+          ></i>
+          <div style="color: rgb(255, 0, 0)">Pindah Lokasi Ktn</div>
+        </div>
+      </a>
+      <a class="nav-link" onclick="exePindahLokasi()" id="pindahlokasiL" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fa fa-exchange mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">Pindah Lokasi Lpsn</div>
+        </div>
+      </a>
+      <a
+        class="nav-link"
+        onclick="exePindahLokasiJumlah()"
+        id="pindahlokasiJ"
+        hidden
+      >
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fa fa-exchange mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">Pindah Lokasi Jml</div>
+        </div>
+      </a>
+      <a class="nav-link" onclick="exeToped()" id="toped" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fa-store-slash mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">Online Shop</div>
+        </div>
+      </a>
+      <a class="nav-link" onclick="exePurchasing()" id="purchasing" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fa-cart-arrow-down mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">Purchasing Order</div>
+        </div>
+      </a>
+      <a class="nav-link" onclick="exeInbound()" id="inbound" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fa-dolly-flatbed mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">Inbound</div>
+        </div>
+      </a>
+      <a class="nav-link" onclick="exeInboundSJ()" id="inboundsj" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fa-dolly-flatbed mb-2"
+            style="font-size: 35px; color: rgb(23, 168, 38)"
+          ></i>
+          <div style="color: rgb(23, 168, 38)">Inbound SJ</div>
+        </div>
+      </a>
+      <a class="nav-link" onclick="exeDelivery()" id="delivery" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fa-shipping-fast mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">Delivery</div>
+        </div>
+      </a>
+      <a
+        class="nav-link"
+        onclick="exePenerimaanBarang()"
+        id="penerimaan"
+        hidden
+      >
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fa-pallet mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">Penerimaan Barang</div>
+        </div>
+      </a>
+      <a class="nav-link" onclick="exeDeliveryNew()" id="deliveryNew" hidden>
+        <div
+          style="
+            padding: 20px;
+            box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+            border-radius: 8px;
+          "
+        >
+          <i
+            class="fas fa-shipping-fast mb-2"
+            style="font-size: 35px; color: black"
+          ></i>
+          <div style="color: black">Delivery New</div>
+        </div>
+      </a>
+
+      <div></div>
+    </div>
+    <script>
+      if (level == 1) {
+        document.getElementById("picking").hidden = false;
+      }
+      if (level == 2) {
+        document.getElementById("packing").hidden = false;
+        document.getElementById("delivery").hidden = false;
+        document.getElementById("deliveryNew").hidden = false;
+      }
+      if (level == 3) {
+        document.getElementById("reffiler").hidden = false;
+        document.getElementById("soK").hidden = false;
+        document.getElementById("soL").hidden = false;
+        document.getElementById("pindahlokasiK").hidden = false;
+        document.getElementById("pindahlokasiL").hidden = false;
+        document.getElementById("pindahlokasiJ").hidden = false;
+      }
+      if (level == 4) {
+        document.getElementById("soK").hidden = false;
+        document.getElementById("soL").hidden = false;
+        document.getElementById("pindahlokasiK").hidden = false;
+        document.getElementById("pindahlokasiL").hidden = false;
+        document.getElementById("pindahlokasiJ").hidden = false;
+      }
+      if (level == 5) {
+        document.getElementById("purchasing").hidden = false;
+        document.getElementById("inbound").hidden = false;
+        document.getElementById("inboundsj").hidden = false;
+        document.getElementById("penerimaan").hidden = false;
+      }
+      if (level == 6) {
+        document.getElementById("soK").hidden = false;
+        document.getElementById("soL").hidden = false;
+        document.getElementById("pindahlokasiK").hidden = false;
+        document.getElementById("pindahlokasiL").hidden = false;
+        document.getElementById("pindahlokasiJ").hidden = false;
+        document.getElementById("purchasing").hidden = false;
+        document.getElementById("inbound").hidden = false;
+      }
+      if (level == 7) {
+        document.getElementById("picking").hidden = false;
+        document.getElementById("packing").hidden = false;
+        document.getElementById("reffiler").hidden = false;
+        document.getElementById("soK").hidden = false;
+        document.getElementById("soL").hidden = false;
+        document.getElementById("pindahlokasiK").hidden = false;
+        document.getElementById("pindahlokasiL").hidden = false;
+        document.getElementById("pindahlokasiJ").hidden = false;
+        document.getElementById("purchasing").hidden = false;
+        document.getElementById("inbound").hidden = false;
+        document.getElementById("inboundsj").hidden = false;
+        document.getElementById("delivery").hidden = false;
+        document.getElementById("penerimaan").hidden = false;
+      }
+      if (level == 8) {
+        document.getElementById("soL").hidden = false;
+      }
+      if (level == 9) {
+        document.getElementById("picking").hidden = false;
+        document.getElementById("packing").hidden = false;
+        document.getElementById("reffiler").hidden = false;
+        document.getElementById("soK").hidden = false;
+        document.getElementById("soL").hidden = false;
+        document.getElementById("pindahlokasiK").hidden = false;
+        document.getElementById("pindahlokasiL").hidden = false;
+        document.getElementById("pindahlokasiJ").hidden = false;
+        document.getElementById("toped").hidden = false;
+        document.getElementById("purchasing").hidden = false;
+        document.getElementById("inbound").hidden = false;
+        document.getElementById("inboundsj").hidden = false;
+        document.getElementById("delivery").hidden = false;
+        document.getElementById("penerimaan").hidden = false;
+        document.getElementById("deliveryNew").hidden = false;
+      }
+      if (level == 10) {
+        document.getElementById("picking").hidden = false;
+        document.getElementById("packing").hidden = false;
+        document.getElementById("pindahlokasiK").hidden = false;
+        document.getElementById("pindahlokasiL").hidden = false;
+        document.getElementById("pindahlokasiJ").hidden = false;
+        document.getElementById("toped").hidden = false;
+      }
+    </script>
+  </body>
+</html>

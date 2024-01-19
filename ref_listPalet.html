@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Reffiler</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <!-- swal -->
+    <link
+      rel="stylesheet"
+      href="./asset/@sweetalert2/theme-material-ui/material-ui.css"
+    />
+    <script src="./asset/sweetalert2/dist/sweetalert2.all.js"></script>
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      document.addEventListener("deviceready", onDeviceReady, false);
+      var isiData = [];
+
+      function onDeviceReady() {
+        showBarang();
+      }
+
+      //-----------------------------------------------------------------------------------------------------------------
+      function showBarang() {
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", UrlApi + "/nug_api/getBrgKeLokEcer?namalogin=" + user);
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "namalogin=" + user;
+
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          const t = document.querySelector("#bodylistBarang");
+          t.innerHTML = "";
+          var obj = JSON.parse(this.responseText);
+          isiData = obj.data.rows;
+          var err = obj.data.total;
+          if (err == 0) {
+            Swal.fire({
+              title: "Info!",
+              text: "Tidak Ada List Palet",
+              icon: "info",
+              confirmButtonText: "Back",
+            });
+            return;
+          }
+
+          isiData.forEach((item, i) => {
+            var row = document.createElement("tr"),
+              div1 = document.createElement("div"),
+              div3 = document.createElement("div"),
+              cell1 = document.createElement("th"),
+              cell2 = document.createElement("th"),
+              cell3 = document.createElement("th");
+            cell1.classList.add("card5"),
+              cell2.classList.add("card4"),
+              cell3.classList.add("card4"),
+              div1.classList.add("card6"),
+              row.classList.add("row1");
+            cell1.innerHTML =
+              "<button class='stybuttonList' onclick='ambilBarang(" +
+              i +
+              ")' style='color: black; font-size: 16px'>" +
+              item.namabrg +
+              "</button>";
+            //cell1.innerHTML = item.namabrg;
+            var barcode = item.kodebrgkarton;
+            cell2.innerHTML =
+              "<button class='stybuttonList' onclick='ambilBarang(" +
+              i +
+              ")' style='color: black; font-size: 16px'>" +
+              item.kodebrgkarton +
+              "</button>";
+            //cell2.innerHTML = item.kodebrgkarton;
+            if (barcode == "") {
+              cell2.innerHTML =
+                "<button class='stybuttonList' onclick='ambilBarang(" +
+                i +
+                ")' style='color: black; font-size: 16px'>" +
+                item.kodebrgkarton +
+                "</button>";
+            }
+            //cell3.innerHTML = item.lokasi;
+            cell3.innerHTML =
+              "<button class='stybuttonList' onclick='ambilBarang(" +
+              i +
+              ")' style='color: black; font-size: 16px'>" +
+              item.lokasi +
+              "</button>";
+            div3.appendChild(cell1),
+              row.appendChild(div3),
+              div1.appendChild(cell2),
+              div1.appendChild(cell3),
+              row.appendChild(div1),
+              t.appendChild(row);
+          });
+        };
+      }
+
+      function ambilBarang(rows) {
+        var idrefill = isiData[rows]["idtemprefill"],
+          kodebrg = isiData[rows]["kodebrg"],
+          jmlambil = isiData[rows]["jmlambil"],
+          lokasi = isiData[rows]["lokasi"],
+          kodebrg = kodebrg.trim();
+        location.href =
+          "ref_inputJumlah.html?namalogin=" +
+          user +
+          "&level=" +
+          level +
+          "&idrefill=" +
+          idrefill +
+          "&kodebrg=" +
+          kodebrg;
+      }
+
+      function exeDashboard() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeInput() {
+        location.href =
+          "ref_inputLocationLepasan.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeListTugas() {
+        location.href =
+          "ref_listTugas.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeListPalet() {
+        location.href =
+          "ref_listPalet.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeBack() {
+        location.href =
+          "ref_inputLocationLepasan.html?namalogin=" + user + "&level=" + level;
+      }
+      function exePindahLokasi() {
+        location.href =
+          "pindahLokasi.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeRefresh() {
+        //location.href="scan_barang.html?namalogin="+user+"&level="+level
+        document.location.reload(true);
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 14px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <a onclick="exeBack()"
+          ><i
+            class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+            style="font-size: 25px"
+          ></i
+        ></a>
+        <div>
+          <h5 style="line-height: 20px; color: white">REFFILER</h5>
+          <h6 style="line-height: 0px; color: white">List Barang Koli</h6>
+        </div>
+      </div>
+      <div>
+        <a class="" data-bs-toggle="dropdown" href="">
+          <i
+            class="fas fa-bars fa-sm fa-fw mr-3 text-white"
+            style="font-size: 28px"
+          ></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="exeDashboard()">
+              <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>dashboard
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeInput()">
+              <i class="far fa-edit fa-sm fa-fw m-2 text-black"></i>Input Task
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeListTugas()">
+              <i class="fas fa-clipboard-list fa-sm fa-fw m-2 text-black"></i
+              >List Tugas
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item active" onclick="exeListPalet()">
+              <i class="fas fa-dolly-flatbed fa-sm fa-fw m-2 text-black"></i
+              >List Palet
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeRefresh()">
+              <i class="fas fa-sync fa-sm fa-fw m-2 text-black"></i>Refresh
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+    </div>
+
+    <div>
+      <div style="border-radius: 8px">
+        <div>
+          <label
+            for="input1"
+            class="form-label font-weight-bold text-primary"
+            style="padding: 20px 0px 0px 20px; font-size: 24px"
+            >List Barang Koli</label
+          >
+        </div>
+        <div style="border: none; text-align: -webkit-center">
+          <table
+            id="listBarang"
+            style="
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              padding: 0 10px;
+            "
+          >
+            <thead></thead>
+            <tbody
+              id="bodylistBarang"
+              style="display: grid; padding: 0 0; gap: 16px"
+            ></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

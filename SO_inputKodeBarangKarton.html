@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Stok Opname</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <!-- swall -->
+    <link
+      rel="stylesheet"
+      href="./asset/@sweetalert2/theme-material-ui/material-ui.css"
+    />
+    <script src="./asset/sweetalert2/dist/sweetalert2.all.js"></script>
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      document.addEventListener("deviceready", onDeviceReady, false);
+      var satuan = GetURLParameter("satuan");
+      var namasatuan = GetURLParameter("namasatuan");
+      var headerlokasi = GetURLParameter("lokasi");
+      var getData = [];
+      var barcode = "";
+      var kodebarang = "";
+      var iddstok = "";
+
+      function onDeviceReady() {
+        document.addEventListener("deviceready", showBarang, false);
+        document.getElementById("desSO1").innerHTML = user;
+        document.getElementById("input2").value = 0;
+        document.getElementById("input1").focus();
+        if (namasatuan == 1) {
+          document.getElementById("desSO").innerHTML = "Kartonan";
+        } else {
+          document.getElementById("desSO").innerHTML = "Lepasan";
+        }
+      }
+      //----------------------------------------------------------------------------------------------------------------------------------------
+      function exeScan() {
+        var jumlah = document.getElementById("input2").value;
+        var barcode = document.getElementById("input1").value;
+        var cek = barcode.indexOf(".");
+        if (jumlah == "" || barcode == "") {
+          Swal.fire({
+            title: "Oops...",
+            text: "Field Kosong",
+            icon: "warning",
+            confirmButtonText: "Back",
+          });
+          return;
+        }
+        if (cek == 1) {
+          Swal.fire({
+            title: "Oops...",
+            text: "Scan Bukan Barcode",
+            icon: "warning",
+            confirmButtonText: "Back",
+          });
+          return;
+        }
+        if (jumlah == 0) {
+          Swal.fire({
+            title: "Mengubah Stok Menjadi 0 ?",
+            showCancelButton: true,
+            confirmButtonText: "Ubah",
+            denyButtonText: `Batal`,
+          }).then((result) => {
+            if (result.isConfirmed) {
+              put(jumlah, barcode);
+              return;
+            }
+            if (result.isDenied) {
+              Swal.fire("Batal", "", "info");
+              return;
+            }
+          });
+        } else {
+          put(jumlah, barcode);
+        }
+      }
+
+      const put = (jumlah, barcode) => {
+        console.log(jumlah, barcode);
+        let xhr = new XMLHttpRequest();
+        if (satuan == 1) {
+          xhr.open(
+            "PUT",
+            UrlApi +
+              "/nug_api/ccStokKarton?lokasi=" +
+              headerlokasi +
+              "&barcode=" +
+              barcode +
+              "&namalogin=" +
+              user +
+              "&jumlahbarang=" +
+              jumlah +
+              "&kodebarang=" +
+              kodebarang +
+              "&iddstok=" +
+              iddstok
+          );
+        } else {
+          xhr.open(
+            "PUT",
+            UrlApi +
+              "/nug_api/ccStok?lokasi=" +
+              headerlokasi +
+              "&barcode=" +
+              barcode +
+              "&namalogin=" +
+              user +
+              "&jumlahbarang=" +
+              jumlah +
+              "&kodebarang=" +
+              kodebarang +
+              "&iddstok=" +
+              iddstok
+          );
+        }
+
+        console.log(headerlokasi, kodebarang, iddstok);
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "&barcode=" + barcode + "&satuan=" + status;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          //console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var msg = obj.msg;
+          var err = obj.error;
+          if (err == "true") {
+            Swal.fire({
+              title: "Oops...",
+              text: msg,
+              icon: "warning",
+              confirmButtonText: "Back",
+            });
+            return;
+          }
+          Swal.fire({
+            title: "Berhasil",
+            icon: "success",
+            confirmButtonText: "Ok",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              exeHome();
+            }
+          });
+        };
+      };
+
+      function showBarang() {
+        var getDictJumlah = [];
+        let xhr = new XMLHttpRequest();
+        var lokasi = GetURLParameter("lokasi");
+        var kodebrg = GetURLParameter("kodebarang");
+        if (satuan == 1) {
+          xhr.open(
+            "GET",
+            UrlApi +
+              "/nug_api/getStokLocationKarton?kodebarang=" +
+              kodebrg +
+              "&lokasi=" +
+              lokasi
+          );
+        } else {
+          xhr.open(
+            "GET",
+            UrlApi +
+              "/nug_api/getStokLocationLepasan?lokasi=" +
+              lokasi +
+              "&kodebarang=" +
+              kodebrg
+          );
+        }
+
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "lokasi=" + lokasi;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          var obj = JSON.parse(this.responseText);
+          console.log(obj);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            alert(msg);
+            return;
+          }
+          //console.log(obj.data.rows)
+          getData = obj.data.rows;
+          view();
+        };
+      }
+
+      const view = () => {
+        getData.forEach((item) => {
+          kodebarang = item.kodebarang;
+          iddstok = item.iddstoklokasi;
+          if (item.namabrg == "") {
+            Swal.fire({
+              title: "Error",
+              text: "Data Bermasalah",
+              icon: "error",
+              confirmButtonText: "Back",
+            });
+            document.getElementById("namaError").innerHTML = `Data Bermasalah`;
+          } else {
+            document.getElementById("nama").innerHTML = item.namabrg;
+          }
+          document.getElementById("kodebrg").innerHTML = item.kodebarangkarton;
+          document.getElementById("tujuan").innerHTML = headerlokasi;
+          if (satuan == 1) {
+            document.getElementById(
+              "stok"
+            ).innerHTML = `Stok Karton : ${item.jumlahbarang}`;
+          } else {
+            document.getElementById(
+              "stok"
+            ).innerHTML = `Stok Lepasan : ${item.jumlahbarang}`;
+          }
+        });
+      };
+
+      function cekInput() {
+        Swal.fire({
+          title: "Selesai",
+          icon: "success",
+          confirmButtonText: "Ok",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            exeHome();
+          }
+        });
+      }
+
+      function exeDashboard() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeHome() {
+        location.href =
+          "SO_scanLokasiKarton.html?namalogin=" +
+          user +
+          "&satuan=" +
+          satuan +
+          "&namasatuan=" +
+          namasatuan +
+          "&level=" +
+          level;
+      }
+      function exePindahLokasi() {
+        location.href =
+          "pindahLokasi.html?namalogin=" +
+          user +
+          "&satuan=" +
+          satuan +
+          "&namasatuan=" +
+          namasatuan +
+          "&level=" +
+          level;
+      }
+      function exeBack() {
+        location.href =
+          "SO_scanLokasiKarton.html?namalogin=" +
+          user +
+          "&satuan=" +
+          satuan +
+          "&namasatuan=" +
+          namasatuan +
+          "&level=" +
+          level;
+      }
+      function exeEdit() {
+        location.href =
+          "SO_editJumlah.html?namalogin=" +
+          user +
+          "&satuan=" +
+          satuan +
+          "&namasatuan=" +
+          namasatuan +
+          "&level=" +
+          level;
+      }
+      function exeDelete() {
+        location.href =
+          "SO_hapusBarang.html?namalogin=" +
+          user +
+          "&satuan=" +
+          satuan +
+          "&namasatuan=" +
+          namasatuan +
+          "&level=" +
+          level;
+      }
+      function exeRefresh() {
+        //location.href="scan_barang.html?namalogin="+user+"&level="+level
+        document.location.reload(true);
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 0px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <a onclick="exeBack()"
+          ><i
+            class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+            style="font-size: 25px"
+          ></i
+        ></a>
+        <div>
+          <h5 style="line-height: 20px; color: white">
+            STOK OPNAME <a id="desSO"></a>
+          </h5>
+          <h6 style="line-height: 0px; color: white">
+            Hellow <a id="desSO1"></a>
+          </h6>
+        </div>
+      </div>
+      <div>
+        <a class="" data-bs-toggle="dropdown" href="">
+          <i
+            class="fas fa-bars fa-sm fa-fw mr-3 text-white"
+            style="font-size: 28px"
+          ></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="exeDashboard()">
+              <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>Dashboard
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeHome()">
+              <i
+                class="fas fas fa-clipboard-list fa-sm fa-fw m-2 text-black"
+              ></i
+              >Home
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeRefresh()">
+              <i class="fas fa-sync fa-sm fa-fw m-2 text-black"></i>Refresh
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+    </div>
+
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 100%;
+        gap: 30px;
+        padding-bottom: 20px;
+        text-align: left;
+        margin: auto;
+      "
+    >
+      <div
+        style="
+          box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+          border-radius: 8px;
+        "
+      >
+        <div>
+          <div class="card-body">
+            <div class="table-responsive-md">
+              <label
+                for="input1"
+                class="form-label font-weight-bold text-primary"
+                style="font-size: 18px"
+                >Info Barang:
+              </label>
+              <div>
+                <p
+                  id="namaError"
+                  style="
+                    font-size: 18px;
+                    color: red;
+                    font-weight: 800;
+                    margin: 0;
+                    padding: 0;
+                  "
+                ></p>
+                <p
+                  id="nama"
+                  style="
+                    font-size: 18px;
+                    color: black;
+                    font-weight: 800;
+                    margin: 0;
+                    padding: 0;
+                  "
+                ></p>
+                <p
+                  id="kodebrg"
+                  style="
+                    font-size: 17px;
+                    color: black;
+                    font-weight: 700;
+                    margin: 0;
+                    padding: 7px 0;
+                  "
+                ></p>
+                <p
+                  id="tujuan"
+                  style="
+                    font-size: 17px;
+                    color: black;
+                    font-weight: 700;
+                    margin: 0 0 0 40px;
+                    padding: 0 0 0 10px;
+                    background: antiquewhite;
+                    letter-spacing: 8px;
+                  "
+                ></p>
+                <p
+                  id="stok"
+                  style="
+                    font-size: 17px;
+                    color: #636363;
+                    font-weight: 800;
+                    margin: 0 20px 0 0;
+                    padding: 0;
+                    text-align: end;
+                  "
+                ></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: 0 25px; text-align: center">
+      <input
+        type="text"
+        class="form-control"
+        id="input1"
+        placeholder="Enter Barcode"
+        name="input1"
+        style="text-align: center"
+      />
+    </div>
+    <div style="text-align: center">
+      <label
+        for="input2"
+        style="
+          font-size: 17px;
+          font-weight: 800;
+          color: Black;
+          padding-top: 5px;
+        "
+        >Input Jumlah</label
+      >
+      <input type="tel" id="input2" name="input2" class="styleInput4" />
+    </div>
+    <div style="justify-content: center">
+      <div style="display: flex; width: 100%; justify-content: center">
+        <button
+          onclick="cekInput()"
+          type="button"
+          id="simpanLokasi"
+          class="btn btn-primary btn-m"
+          style="
+            border-radius: 20px;
+            width: 30%;
+            margin: 14px;
+            background: #ededed;
+            color: #7b7b7b;
+            font-weight: 900;
+            border: none;
+            box-shadow: 3px 3px 10px -1px #6d8dada6;
+          "
+        >
+          Selesai
+        </button>
+        <button
+          onclick="exeScan()"
+          type="button"
+          id="simpanLokasi"
+          class="btn btn-primary btn-m"
+          style="
+            border-radius: 20px;
+            width: 30%;
+            margin: 14px;
+            background: #ededed;
+            color: #7b7b7b;
+            font-weight: 900;
+            border: none;
+            box-shadow: 3px 3px 10px -1px #6d8dada6;
+          "
+        >
+          Ubah Stok
+        </button>
+      </div>
+    </div>
+  </body>
+  <script>
+    // Menggunakan JavaScript untuk menangani event focus
+    document.getElementById("input2").addEventListener("focus", function () {
+      // Mengatur nilai input menjadi 0
+      this.value = "";
+    });
+    document.getElementById("input2").addEventListener("blur", function () {
+      if (this.value === "") {
+        this.value = "0";
+      }
+    });
+  </script>
+</html>

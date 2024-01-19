@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title> Inbound </title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css">
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css">
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet">
+    <link href="asset/css/nunito.css" rel="stylesheet">
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet">
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="js/jquery.autocomplete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js"  type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8" > 
+   
+    document.addEventListener("deviceready", onDeviceReady, false);
+    var nopalet = GetURLParameter("palet");
+    var dataDict = []
+    var dataListInboundDict = []
+    var idDict = "";
+    var cek = 0;
+
+
+    function onDeviceReady() {   
+        document.getElementById("nopalet").innerHTML = "No Palet : " + nopalet;
+        //getDictSJ();
+    }
+
+    function getData(id){
+        idDict = id;
+    }
+
+    function getBarang(){
+        var jmlDict = dataListInboundDict[idDict]["sisa"];
+        var lokasi=nopalet;
+        var jumlahbarang=document.getElementById("jumlah").value;
+        jmlDict=parseInt(jmlDict)-parseInt(jumlahbarang);
+        var satuan="Karton";
+        var kodebarangkarton =document.getElementById("barcode").value;
+        let tempDict={'nb':dataListInboundDict[idDict]["nb"],'lok':lokasi,'kbr':dataListInboundDict[idDict]["nb"],'kodebrgkarton':kodebarangkarton,'nl':user,'jml':jumlahbarang,'idpodet':dataListInboundDict[idDict]["idpodet"],'st':satuan}
+        dataDict.push(tempDict);
+        dataListInboundDict[idDict]["sisa"]=jmlDict;
+        if(dataListInboundDict[idDict]["sisa"]<0){
+            dataListInboundDict.splice(idDict,1);
+        }
+        showBarangDict();
+        showPalet();
+
+    }    
+
+    function showPalet(){
+        var theTabel=document.getElementById("listPalet");
+        theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0])
+        var tbody = document.createElement("tbody");
+        theTabel.appendChild(tbody);
+        for (var i=0;i<dataDict.length;i++) {
+            var row = document.createElement("tr");
+            var cell1 = document.createElement("td");
+            var cell2 = document.createElement("td");
+            var cell3 = document.createElement("td");
+            cell1.innerHTML =  dataDict[i]["nb"]
+            cell2.innerHTML =  dataDict[i]["lok"]
+            cell3.innerHTML =  dataDict[i]["jml"]
+            row.appendChild(cell1);
+            row.appendChild(cell2);
+            row.appendChild(cell3);
+            tbody.appendChild(row);  
+            
+        }
+        
+        clearField();
+    }
+    //-----------------------------------------------------------------------------------------------------------------
+
+    function getDictSJ(){
+        var nosj = "";
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET",UrlApi+"/nug_api/listSuratJalan?nosj="+nosj);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        let data = '';
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+        //console.log(this.responseText);
+        var obj = JSON.parse(this.responseText);
+        var isiData=obj.data.rows;
+        for (var i=0;i<isiData.length;i++) {
+            let tempDict={'nb':isiData[i]["namalengkap"],'lok':nopalet,'kbr':isiData[i]["kodebarang"],'nl':user,'jml':isiData[i]["jumlahbarang"],'idpodet':isiData[i]["idpodet"],'sisa':isiData[i]["sisa"]}
+            dataListInboundDict.push(tempDict);
+        }
+        showBarangDict();
+        }
+    }
+
+    function showBarangDict() {
+        var theTabel=document.getElementById("listBarang");
+        theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0])
+        var tbody = document.createElement("tbody");
+        theTabel.appendChild(tbody)
+        for (var i=0;i<dataListInboundDict.length;i++) {
+            var row = document.createElement("tr");
+            var cell1 = document.createElement("td");
+            var cell2 = document.createElement("td");
+            var cell3 = document.createElement("td");
+            cell1.classList.add("stybuttonList");
+            cell1.innerHTML = "<button class='stybuttonList' onclick='getData("+i+")' data-bs-toggle='modal' data-bs-target='#myModal' >"+dataListInboundDict[i]["nb"]+"</button>"
+            cell2.innerHTML = "<button class='stybuttonList' onclick='getData("+i+")' data-bs-toggle='modal' data-bs-target='#myModal'>"+dataListInboundDict[i]["jml"]+"</button>"            
+            cell3.innerHTML = "<button class='stybuttonList' onclick='getData("+i+")' data-bs-toggle='modal' data-bs-target='#myModal' style='color: blue;'>"+dataListInboundDict[i]["sisa"]+"</button>"    
+            row.appendChild(cell1);
+            row.appendChild(cell2);
+            row.appendChild(cell3);
+            tbody.appendChild(row);  
+        
+        }
+    }
+
+    function exeSelesai(){
+        alert("KIRIM");
+    }
+
+    function clearField(){
+        document.getElementById("jumlah").value="";
+        document.getElementById("barcode").value="";
+    }
+
+    function exeDashboard(){
+        location.href="dashboard.html?namalogin="+user + "&level=" +level
+    }
+    function exeHome(){
+        location.href="InboundSJ_palet.html?namalogin="+user + "&level=" +level
+    }
+    function exeBack(){
+        location.href="InboundSJ_palet.html?namalogin="+user + "&level=" +level
+    }
+    function exeRefresh(){
+        //location.href="scan_barang.html?namalogin="+user + "&level=" +level
+        document.location.reload(true);
+    }
+        </script>
+
+
+</head>
+
+
+<body id="page-top">
+
+    <div style="width: 100%;display: flex;background-image: linear-gradient(to right, rgb(34,151,238) , rgb(66, 215, 81)); padding: 16px 14px ;box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);align-items:center;">
+        <div style="width: 100%;display: flex; align-items:center;gap:12px;">
+          <a onclick="exeBack()"><i class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white" style="font-size: 25px;"></i></a>
+          <div>
+            <h5 style="line-height: 20px; color:white;" >INBOUND</h2>
+            <h6 style="line-height: 0px; color: white">List Barang</h4>
+          </div>
+        </div>
+        <div>
+            
+          <a class="" data-bs-toggle="dropdown" href="">
+            <i class="fas fa-bars fa-sm fa-fw mr-3 text-white" style="font-size: 28px;"></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" onclick="exeDashboard()">
+            <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>dashboard
+            </a>
+          </li>
+          <li><a class="dropdown-item" onclick="exeHome()">
+            <i class="far fa-edit fa-sm fa-fw m-2 text-black"></i>Home
+            </a>
+          </li>
+          <li><a class="dropdown-item"  onclick="exeRefresh()">
+            <i class="fas fa-sync fa-sm fa-fw m-2 text-black"></i>Refresh
+            </a>
+          </li>
+         
+        </ul>
+              
+        </div>
+         <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+        </div>
+          
+
+       
+        <p id="nopalet" class="styleSO" style="font-size:16px"></p>
+
+            
+            <div style="box-shadow: 2px 6px 10px 2px rgb(215, 215, 215); border-radius:8px;">
+                <div>
+                    <div>
+                        <label for="" class="form-label font-weight-bold text-primary" style="padding:20px 0px 0px 20px; font-size:24px" >List Palet</label>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive-md">
+                            <table class="table" id="listPalet">
+                                <thead>
+                                    <tr>
+                                    <th style="vertical-align:middle">Nama Barang</th>
+                                    <th style="vertical-align:middle">Palet</th>
+                                    <th style="vertical-align:middle">Jumlah</th>
+                                    <!-- <th style="vertical-align:middle">Terlokasi</th> -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                     </div>
+                </div>
+            <div>
+
+            <div class="justify-content-end"  style=" display: grid;
+            grid-template-columns: 50%;
+            padding: 20px;
+            text-align: center;
+            margin: auto;">
+                <button onclick="exeSelesai()" type="button" id="masukTabelBut" class="btn btn-success btn-m"></i>
+                KIRIM</button>
+            </div>
+
+       
+            <div class="mt-5" style="box-shadow: 2px 6px 10px 2px rgb(215, 215, 215); border-radius:8px;">
+                <div>
+                    <div>
+                        <label for="" class="form-label font-weight-bold text-primary" style="padding:20px 0px 0px 20px; font-size:24px" >List Inbound</label>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive-md">
+                            <table class="table" id="listBarang">
+                                <thead>
+                                    <tr>
+                                    <th style="vertical-align:middle">Nama Barang</th>
+                                    <th style="vertical-align:middle">Order</th>
+                                    <th style="vertical-align:middle">Sisa</th>
+                                    <!-- <th style="vertical-align:middle">Terlokasi</th> -->
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                     </div>
+                </div>
+            <div>
+        </div>
+        <div class="modal" id="myModal">
+            <div class="modal-dialog">
+              <div class="modal-content">
+          
+                <div class="modal-header">
+                  <h4 class="modal-title">Data Barang Masuk</h4>
+                </div>
+          
+                <div class="modal-body">
+                    <label for="jumlah" class="m-2">Input Jumlah</label>
+                    <input type="text" class="form-control" id="jumlah"  name="jumlah">
+                    <label for="barcode" class="m-2">Input Barcode</label>
+                    <input type="text" class="form-control" id="barcode"  name="barcode">
+                </div>
+          
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="getBarang()">Tambah</button>
+                </div>
+          
+              </div>
+            </div>
+          </div>
+
+
+      </body>
+        
+</html>

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Penjualan Langsung</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <!-- <script src="asset/bootstrap-select.min.js"></script> -->
+    <script src="asset/flatpickr.js"></script>
+    <!-- <script src="asset/tempus-dominus.js"></script> -->
+    <script src="js/jquery.autocomplete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      var id = GetURLParameter("id");
+      var kodebrg = "";
+      var barcode = "";
+      var namabrg = "";
+      var kodesup = "";
+      var sj = "";
+      var postDict = [];
+      var getDict = [];
+      var idpodet = "";
+      var sisa = "";
+      var jmlkarton = "";
+      var statusKartonan = 0;
+      var satuan = GetURLParameter("satuan");
+      var satuaninput = "";
+      var nopalet = GetURLParameter("palet");
+
+      document.addEventListener("deviceready", onDeviceReady, false);
+
+      function onDeviceReady() {
+        if (satuan == 0) {
+          document.getElementById("bagian").innerHTML = " Lepasan";
+          document.getElementById("satuantabel").innerHTML = " PCS";
+          satuaninput = "";
+        } else {
+          document.getElementById("bagian").innerHTML = " Kartonan ";
+          document.getElementById("satuantabel").innerHTML = " Karton";
+          satuaninput = "karton";
+          statusKartonan = 1;
+        }
+        document.getElementById("nopalet").innerHTML = "No Palet : " + nopalet;
+        //getSupp();
+        document.getElementById("barcode").focus();
+      }
+      //----------------------------------------------------------------------------------------------------------------------------------------
+
+      function getBarang() {
+        if (event.keyCode == 13) {
+          var scan = document.getElementById("barcode").value;
+          const url =
+            UrlApi + "/nug_api/getSupplierAutoComFromNota?kodebrg=" + scan;
+          fetch(url, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Terjadi kesalahan dalam respons.");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              var isiData = data.data.rows;
+              if (isiData.length == 0) {
+                alert("Barang Tidak Terdaftar Di Barang Masuk [!]");
+                document.getElementById("namabrg").innerHTML = "";
+                document.getElementById("sjinb").innerHTML = "";
+                document.getElementById("jmlnb").innerHTML = "";
+                return;
+              }
+              kodebrg = isiData[0]["kodebarang"];
+              if (kodebrg == "") {
+                alert("Barang Tidak Terdaftar Di Barang Masuk [!]");
+                document.getElementById("namabrg").value = "";
+                document.getElementById("sjinb").value = "";
+                return;
+              }
+              idpodet = isiData[0]["idpodet"];
+              barcode = scan;
+              namabrg = isiData[0]["namalengkap"];
+              sj = isiData[0]["ket1"];
+              kodesup = isiData[0]["supplier"];
+              sisa = isiData[0]["sisa"];
+              jmlkarton = isiData[0]["jmlkarton"];
+
+              var sisakarton = sisa;
+              // Lakukan sesuatu dengan getData
+              if (statusKartonan == 1) {
+                var sisakarton = sisa / jmlkarton;
+              }
+
+              document.getElementById("namabrg").innerHTML = namabrg;
+              document.getElementById("sjinb").innerHTML =
+                "Surat Jalan : " + sj;
+              document.getElementById("jmlnb").innerHTML =
+                "Jumlah Barang : " +
+                sisakarton +
+                " " +
+                document.getElementById("satuantabel").innerHTML;
+              document.getElementById("jumlah").focus();
+            })
+            .catch((error) => {
+              console.error("Terjadi kesalahan:", error);
+            });
+        }
+      }
+
+      function pushDict() {
+        var jml = document.getElementById("jumlah").value;
+        var jmltotal = jml;
+        if (jml == "" || barcode == "") {
+          alert("Isi Semua Field [!]");
+          return;
+        }
+        if (jml > sisa) {
+          console.log(sisa);
+          console.log(jml);
+          alert("Jumlah Barang Lebih Besar Dari Sisa [!]");
+          document.getElementById("jumlah").value = "";
+          document.getElementById("jumlah").focus();
+          return;
+        }
+        if (statusKartonan == 1) {
+          jmltotal = jml * jmlkarton;
+          if (jmltotal > sisa) {
+            console.log(sisa);
+            console.log(jmltotal);
+            alert("Jumlah Barang Lebih Besar Dari Sisa [!]");
+            document.getElementById("jumlah").value = "";
+            document.getElementById("jumlah").focus();
+            return;
+          }
+        }
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "PUT",
+          UrlApi +
+            "/nug_api/getDataBarangDatang?jmltotal=" +
+            jmltotal +
+            "&idpodet=" +
+            idpodet
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            alert(msg);
+            return;
+          }
+          let dicData = {
+            kb: kodebrg,
+            kbr: barcode,
+            us: user,
+            jml: jml,
+            jmlkarton: jmltotal,
+            st: satuaninput,
+            id: idpodet,
+            sj: sj,
+            supplier: kodesup,
+          };
+          let dicData2 = { nm: namabrg, jml: jml, palet: nopalet };
+          postDict.push(dicData);
+          getDict.push(dicData2);
+          console.log(postDict);
+          getList();
+        };
+      }
+
+      function getList() {
+        var theTabel = document.getElementById("listBarang");
+        theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+        var tbody = document.createElement("tbody");
+        theTabel.appendChild(tbody);
+
+        getDict.forEach((item, index) => {
+          var row = document.createElement("tr");
+          var cell1 = document.createElement("td");
+          var cell2 = document.createElement("td");
+          var cell3 = document.createElement("td");
+          var cell4 = document.createElement("td");
+          cell1.classList.add("styleNamabrg");
+          cell2.classList.add("styleOrder");
+          cell3.classList.add("styleOrder");
+          cell1.innerHTML = item.nm; //getDict[i]["nm"];
+          cell2.innerHTML =
+            item.jml + " " + document.getElementById("satuantabel").innerHTML; //getDict[i]["jml"] + " Karton";
+          cell3.innerHTML = item.palet; //getDict[i]["palet"];
+          cell4.innerHTML =
+            "<a onclick='hapusBarang(" +
+            index +
+            ")' style='font-size:28px;'><i class='far fa-trash-alt' style='color:red'></i></a>";
+          row.appendChild(cell1);
+          row.appendChild(cell2);
+          row.appendChild(cell3);
+          row.appendChild(cell4);
+          tbody.appendChild(row);
+        });
+        clearField();
+      }
+
+      function hapusBarang(idx) {
+        var idpo = postDict[idx]["id"];
+        var jmlhps = postDict[idx]["jmlkarton"];
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "DELETE",
+          UrlApi +
+            "/nug_api/getDataBarangDatang?idpodet=" +
+            idpo +
+            "&jmltotal=" +
+            jmlhps
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "idpodet=" + idpo;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            alert(msg);
+            return;
+          }
+          postDict.splice(idx, 1);
+          getDict.splice(idx, 1);
+          console.log(postDict);
+          console.log(getDict);
+          getList();
+        };
+      }
+
+      function postDstoklokasi() {
+        if (getDict.length == 0) {
+          alert("Tidak Ada Data Masuk [!]");
+          return;
+        }
+        var strKirim = JSON.stringify(postDict);
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "POST",
+          UrlApi + "/nug_api/getDataBarangDatang?nopalet=" + nopalet
+        );
+        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        xhr.send(JSON.stringify(strKirim));
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          alert("Berhasil2");
+        };
+        alert("Berhasil");
+        location.href =
+          "InboundSJ_list.html?namalogin=" + user + "&level=" + level;
+      }
+
+      function clearField() {
+        document.getElementById("barcode").value = "";
+        document.getElementById("jumlah").value = "";
+        document.getElementById("namabrg").innerHTML = "";
+        document.getElementById("sjinb").innerHTML = "";
+        document.getElementById("jmlnb").innerHTML = "";
+        document.getElementById("barcode").focus();
+      }
+
+      function exeDashboard() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeInput() {
+        location.href =
+          "ref_inputLocationLepasan.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeListTugas() {
+        location.href =
+          "ref_listTugas.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeListPalet() {
+        location.href =
+          "ref_listPalet.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeDaftarBarang() {
+        location.href =
+          "daftar_barang.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeHome() {
+        location.href =
+          "InboundSJ_list.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeBack() {
+        location.href =
+          "InboundSJ_list.html?namalogin=" + user + "&level=" + level;
+      }
+      function refresh() {
+        //location.href="scan_barang.html?namalogin="+user +"&level=" +level
+        document.location.reload(true);
+      }
+      function exeLogout() {
+        location.href = "index.html" + "&level=" + level;
+      }
+      function exeInput() {
+        location.href =
+          "tokped_inputBarang.html?namalogin=" +
+          user +
+          "&noso=" +
+          noso +
+          "&type=" +
+          cus +
+          "&level=" +
+          level;
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 14px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <a onclick="exeBack()"
+          ><i
+            class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+            style="font-size: 25px"
+          ></i
+        ></a>
+        <div>
+          <h5 style="line-height: 20px; color: white">Inbound Surat Jalan</h5>
+          <h6 style="line-height: 0px; color: white">Inti Guna Nusantara</h6>
+        </div>
+      </div>
+      <div>
+        <a class="" data-bs-toggle="dropdown" href="">
+          <i
+            class="fas fa-bars fa-sm fa-fw mr-3 text-white"
+            style="font-size: 28px"
+          ></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="exeDashboard()">
+              <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>Dashboard
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item active" onclick="exeHome()">
+              <i
+                class="fas fas fa-clipboard-list fa-sm fa-fw m-2 text-black"
+              ></i
+              >Home
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+    </div>
+
+    <p id="nopalet" class="styleSO"></p>
+    <a href="" id="satuantabel" hidden></a>
+
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 100%;
+        gap: 10px;
+        padding: 10px 10px;
+        text-align: left;
+        margin: auto;
+      "
+    >
+      <div>
+        <!-- NAMA BARANG -->
+        <label
+          for=""
+          class="form-label font-weight-bold text-primary ml-3"
+          style="font-size: 24px"
+          >Input Lokasi <a href="" id="bagian"></a
+        ></label>
+
+        <!-- INPUT LOKASI -->
+
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 49% 49%;
+            gap: 10px;
+            padding: 0px 6px 0px 6px;
+            text-align: left;
+            margin: auto;
+          "
+        >
+          <label
+            for="kodeBrg"
+            class="form-label font-weight-bold text-primary mt-2 ml-1"
+            >Input Barcode</label
+          >
+          <label
+            for="kodeBrg"
+            class="form-label font-weight-bold text-primary mt-2 ml-1"
+            >Input Jumlah</label
+          >
+        </div>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 49% 49%;
+            gap: 10px;
+            padding: 0px 6px 0px 6px;
+            text-align: left;
+            margin: auto;
+          "
+        >
+          <input
+            type="text"
+            class="form-control"
+            id="barcode"
+            name="barcode"
+            onkeyup="getBarang()"
+          />
+          <input type="text" class="form-control" id="jumlah" name="jumlah" />
+        </div>
+
+        <p
+          id="namabrg"
+          class="m-2"
+          style="font-size: 18px; font-weight: 600; color: blue"
+        ></p>
+        <p
+          id="sjinb"
+          class="m-2"
+          style="font-size: 17px; font-weight: 500; color: blue"
+        ></p>
+        <p
+          id="jmlnb"
+          class="m-2"
+          style="font-size: 17px; font-weight: 500; color: blue"
+        ></p>
+
+        <div
+          class="justify-content-end"
+          style="
+            display: grid;
+            grid-template-columns: 30% 30%;
+            gap: 20px;
+            padding: 20px 6px 20px 0px;
+            text-align: center;
+            margin: auto;
+          "
+        >
+          <button
+            onclick="pushDict()"
+            type="button"
+            id="masukTabelBut"
+            class="btn btn-primary btn-m"
+          >
+            TAMBAH
+          </button>
+          <button
+            onclick="postDstoklokasi()"
+            type="button"
+            id="masukTabelBut"
+            class="btn btn-success btn-m"
+          >
+            SIMPAN
+          </button>
+        </div>
+
+        <div
+          style="
+            display: grid;
+            grid-template-columns: 100%;
+            text-align: left;
+            margin: auto;
+          "
+        >
+          <div
+            style="
+              box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+              border-radius: 8px;
+            "
+          >
+            <div>
+              <div>
+                <label
+                  for=""
+                  class="form-label font-weight-bold text-primary"
+                  style="padding: 20px 0px 0px 20px; font-size: 24px"
+                  >Daftar Alokasi Barang</label
+                >
+              </div>
+              <div>
+                <div class="table-responsive-md">
+                  <table class="table" id="listBarang">
+                    <thead>
+                      <tr>
+                        <th>Nama Barang</th>
+                        <th>Total</th>
+                        <th>palet</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

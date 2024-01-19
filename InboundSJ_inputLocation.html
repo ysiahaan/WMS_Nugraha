@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>Penjualan Langsung</title>
+
+  <link href="asset/all.min.css" rel="stylesheet" type="text/css">
+  <link href="asset/css/style.css" rel="stylesheet" type="text/css">
+  <link href="asset/css/flatpickr.min.css" rel="stylesheet">
+  <link href="asset/css/nunito.css" rel="stylesheet">
+  <link href="asset/css/bootstrap-select.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <!-- Custom styles for this template-->
+  <link href="asset/sb-admin-2.min.css" rel="stylesheet">
+  <script src="asset/jquery.min.js"></script>
+  <script src="asset/jquery.easing.min.js"></script>
+  <script src="asset/bootstrap.bundle.min.js"></script>
+  <script src="asset/sb-admin-2.min.js"></script>
+  <script src="asset/moment.js"></script>
+  <script src="asset/custom.js"></script>
+  <!-- <script src="asset/bootstrap-select.min.js"></script> -->
+  <script src="asset/flatpickr.js"></script>
+  <!-- <script src="asset/tempus-dominus.js"></script> -->
+  <script src="js/jquery.autocomplete.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+  <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+  <script type="text/javascript" charset="utf-8">
+
+    var id= GetURLParameter("id");
+    var kodebarang = "";
+    var supp = GetURLParameter("supp");
+    var jmlkarton = 0;
+    var jml=0;
+    var satuan = "";
+    var lokasi = "";
+    var jmlorder = "";
+
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    function onDeviceReady() {
+        getSupp();
+    }
+    //----------------------------------------------------------------------------------------------------------------------------------------
+    
+    function getSupp() {
+      let xhr = new XMLHttpRequest();
+      xhr.open("GET", UrlApi + "/nug_api/getSupplier?kodesup=" + supp);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      let data = "kodesup=" + supplier;
+      xhr.send(data);
+      xhr.onload = function () {
+        console.log(this.responseText);
+        var obj = JSON.parse(this.responseText)
+        var dataMain = obj.data.rows;
+        var namaSup=dataMain[0]["namarel"];
+        document.getElementById("supplier").innerHTML="Supplier :  "+namaSup;
+        getBarang();
+      };
+    };
+
+   function getBarang(){
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET",UrlApi+"/nug_api/getDataBarangDatang?idpodet="+id);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        let data = '';
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+            console.log(this.responseText);
+            var obj = JSON.parse(this.responseText);
+            var isiData=obj.data.rows;
+            
+            jmlorder = isiData[0]["jumlahbarang"];
+            document.getElementById("namabarang").value=isiData[0]["namalengkap"] 
+            document.getElementById("totbarangdatang").value=jmlorder +" PCS";
+            document.getElementById("totbarangalokasi").value=isiData[0]["ket2"] +" PCS";
+            document.getElementById("sisa").value=isiData[0]["sisa"] +" PCS";
+            jmlKarton = isiData[0]["jmlkarton"];
+            kodebarang=isiData[0]["kodebarang"];
+            getList();
+        }
+    }    
+   
+
+    function getList(){
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET",UrlApi+"/nug_api/getListDstoklokasi?kodebarang="+kodebarang);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        let data = '';
+        xhr.send(data);
+        xhr.onload = function () {
+            console.log(this.responseText);
+            var obj = JSON.parse(this.responseText);
+            var err = obj.error;
+            var msg = obj.msg;
+            if(err=="true"){
+              alert(msg);
+              return;
+            }
+            var isiData=obj.data.rows;
+            var theTabel=document.getElementById("listBarang");
+            theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0])
+            var tbody = document.createElement("tbody");
+            theTabel.appendChild(tbody)
+            for(i=0;i<isiData.length;i++){
+                var row = document.createElement("tr");
+                var cell1 = document.createElement("td");
+                var cell2 = document.createElement("td");
+                var cell3 = document.createElement("td");
+                var cell4 = document.createElement("td");
+                cell1.classList.add("styleNamabrg");
+                cell2.classList.add("styleNamabrg");
+                cell3.classList.add("styleOrder");
+                cell4.classList.add("styleOrder");
+                cell1.innerHTML = isiData[i]["kodebarang"];
+                cell2.innerHTML = isiData[i]["kodebarangkarton"];
+                cell3.innerHTML = isiData[i]["lokasi"];
+                cell4.innerHTML = isiData[i]["jumlahbarang"];
+                row.appendChild(cell1);
+                row.appendChild(cell2);
+                row.appendChild(cell3);
+                row.appendChild(cell4);
+                tbody.appendChild(row);
+                
+            }
+        }
+    }
+
+    function getValueTotal(){
+      var input= document.getElementById("jumlahpalet").value;
+      jmlPcs = document.getElementById("jumlahlepasan").value;
+      if(jmlPcs!="" && input!=""){
+        alert("Input Jumlah Salah Satu [!]");
+        return;
+      }
+      if(jmlPcs==""){jmlPcs=0}
+      input = jmlKarton*input;
+      jml = parseInt(input) + parseInt(jmlPcs);
+      if(isNaN(jml)){jml=0}
+      var jmltext = jml;
+      if(jml>jmlorder){
+        alert("Jumlah Masuk Melebih Jumlah Order [!]");
+        return;
+      }
+      document.getElementById("jmlTotal").value = jmltext + " PCS";
+    }
+
+    function postDstoklokasi(){
+      var kodebarangkarton = document.getElementById("barcode").value;
+      var lokasilepasan = document.getElementById("lokasilepasan").value;
+      var lokasipalet = document.getElementById("lokasipalet").value;
+      var jmltotal = jml;
+      lokasi = lokasipalet;
+      satuan = "karton"
+      if(lokasi==""){
+        alert("Lokasi Masih Kosong [!]")
+        return;
+      }
+      if(lokasilepasan!="" && lokasipalet!=""){
+        alert("Isi Lokasi Salah Satu [!]")
+        return;
+      }
+      if(jmltotal==""){
+        alert("Jumlah Masih Kosong [!]")
+        return;
+      }
+      if(kodebarangkarton==""){
+        alert("Barcode Masih Kosong [!]")
+        return;
+      }
+      if(lokasipalet==""){
+        lokasi = lokasilepasan;
+        satuan = ""
+      }
+      console.log(kodebarang)
+      console.log(kodebarangkarton)
+      console.log(lokasi)
+      console.log(user)
+      console.log(jmltotal)
+      console.log(satuan)
+      console.log(id)
+      let xhr = new XMLHttpRequest();
+      xhr.open("POST",UrlApi+"/nug_api/getDataBarangDatang?kodebrg="+kodebarang+"&kodebarangkarton="+kodebarangkarton+"&lokasi="+
+      lokasi+"&namalogin="+user+"&jmltotal="+jmltotal+"&satuan="+satuan+"&idpodet="+id);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      let data = '';
+      xhr.send(data);
+      xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if(err=="true"){
+            alert("ERroR");
+            return;
+          }
+          alert(msg);
+          location.href="InboundSJ_list.html?namalogin="+user + "&level="+level
+
+      }
+    }
+
+    function clearField(){
+      document.getElementById("namabarang").value = "";
+      document.getElementById("txtKodeBar").value = "";
+      document.getElementById("txtSatuan").value = "";
+      document.getElementById("jmlTotal").value = "";
+      document.getElementById("jmlKarton").value = "";
+      document.getElementById("jmlPcs").value = "";
+      jml=0;
+      jmlKarton=0;
+      jmlPcs=0;
+    }
+
+
+    function exeDashboard() {
+      location.href = "dashboard.html?namalogin=" + user + "&level=" + level
+    }
+    function exeInput() {
+      location.href = "ref_inputLocationLepasan.html?namalogin=" + user + "&level=" + level
+    }
+    function exeListTugas() {
+      location.href = "ref_listTugas.html?namalogin=" + user + "&level=" + level
+    }
+    function exeListPalet() {
+      location.href = "ref_listPalet.html?namalogin=" + user + "&level=" + level
+    }
+    function exeDaftarBarang() {
+      location.href = "daftar_barang.html?namalogin=" + user + "&level=" + level
+    }
+    function exeBack() {
+      location.href="InboundSJ_list.html?namalogin="+user + "&level="+level
+    }
+    function refresh() {
+      //location.href="scan_barang.html?namalogin="+user + "&level="+level
+      document.location.reload(true);
+    }
+    function exeLogout(){
+      location.href="index.html"+"&level="+level
+    }
+    function exeInput(){
+      location.href = "tokped_inputBarang.html?namalogin=" +user+"&noso="+noso+"&type="+cus+"&level="+level;
+    }
+    
+
+   
+  </script>
+
+
+</head>
+
+
+<body id="page-top">
+
+  <div
+    style="width: 100%;display: flex;background-image: linear-gradient(to right, rgb(34,151,238) , rgb(66, 215, 81)); padding: 16px 14px ;box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);align-items:center;">
+    <div style="width: 100%;display: flex; align-items:center;gap:12px;">
+      <a onclick="exeBack()"><i class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+          style="font-size: 25px;"></i></a>
+      <div>
+        <h5 style="line-height: 20px; color:white;">Penerimaan Barang</h2>
+          <h6 style="line-height: 0px; color: white">Inti Guna Nusantara</h4>
+      </div>
+    </div>
+    <div>
+
+      <a class="" data-bs-toggle="dropdown" href="">
+        <i class="fas fa-bars fa-sm fa-fw mr-3 text-white" style="font-size: 28px;"></i>
+      </a>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" onclick="exeDashboard()">
+            <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>Dashboard
+          </a>
+        </li>
+        <li><a class="dropdown-item" onclick="exeBack()">
+          <i class="fas fas fa-clipboard-list fa-sm fa-fw m-2 text-black"></i>Home
+        </a>
+      </li><li><a class="dropdown-item" onclick="exeHistory()">
+        <i class="fas fas fa-clipboard-list fa-sm fa-fw m-2 text-black"></i>History
+      </a>
+    </li>
+      </ul>
+
+    </div>
+    <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+  </div>
+
+  <p id="supplier" class="styleSO" style="font-size:16px"></p>
+
+    <div style="
+        display: grid;
+        grid-template-columns: 100%;
+        gap: 10px;
+        padding: 10px 10px;
+        text-align: left;
+        margin: auto;">
+
+
+    <div>
+
+
+    <!-- NAMA BARANG -->
+    <label for="kodeBrg" class="form-label font-weight-bold text-primary ml-3">Nama Barang</label>
+    <div style=" display: grid;
+        grid-template-columns: 100%;
+        gap: 10px;
+        padding: 0px 6px 10px 6px ;
+        text-align: left;
+        margin: auto;">
+
+        <input type="text" class="form-control" id="namabarang" placeholder="Search Barang" name="namabarang" readonly>
+    </div>
+
+      
+
+    <!-- INFO JUMLAH BARANG ALOKASI DAN BARANG DATANG -->
+    <div style=" display: grid;
+        grid-template-columns: 32% 32% 32%;
+        gap: 10px;
+        padding: 0px 6px 0px 6px ;
+        text-align: left;
+        margin: auto;">
+        <label for="kodeBrg" class="form-label font-weight-bold text-primary mt-2 ml-1">Brg Datang</label>
+        <label for="kodeBrg" class="form-label font-weight-bold text-primary mt-2 ml-1">Brg Alokasi</label>
+        <label for="kodeBrg" class="form-label font-weight-bold text-primary mt-2 ml-1">Sisa</label>
+    </div>
+    <div style=" display: grid;
+        grid-template-columns: 32% 32% 32%;
+        gap: 10px;
+        padding: 0px 6px 0px 6px ;
+        text-align: left;
+        margin: auto;">
+        
+        <input type="text" class="form-control" id="totbarangdatang" name="totbarangdatang" readonly>
+        <input type="text" class="form-control" id="totbarangalokasi" name="totbarangalokasi" readonly>
+        <input type="text" class="form-control" id="sisa" name="sisa" readonly>
+    </div>
+
+    <!-- INPUT LOKASI -->
+
+    <div style=" display: grid;
+        grid-template-columns: 49% 49%;
+        gap: 10px;
+        padding: 0px 6px 0px 6px ;
+        text-align: left;
+        margin: auto;">
+        <label for="kodeBrg" class="form-label font-weight-bold text-primary mt-2 ml-1">Lokasi Palet</label>
+        <label for="kodeBrg" class="form-label font-weight-bold text-primary mt-2 ml-1">Jumlah Karton</label>
+    </div>
+    <div style=" display: grid;
+        grid-template-columns: 49% 49%;
+        gap: 10px;
+        padding: 0px 6px 0px 6px ;
+        text-align: left;
+        margin: auto;">
+        
+        <input type="text" class="form-control" id="lokasipalet"  name="lokasipalet">
+        <input type="text" class="form-control" id="jumlahpalet"  name="jumlahpalet" onkeyup="getValueTotal()">
+    </div>
+
+    <div style=" display: grid;
+        grid-template-columns: 49% 49%;
+        gap: 10px;
+        padding: 0px 6px 0px 6px ;
+        text-align: left;
+        margin: auto;">
+        <label for="kodeBrg" class="form-label font-weight-bold text-primary mt-2 ml-1">Lokasi Lepasan</label>
+        <label for="kodeBrg" class="form-label font-weight-bold text-primary mt-2 ml-1">Jumlah PCS</label>
+    </div>
+    <div style=" display: grid;
+        grid-template-columns: 49% 49%;
+        gap: 10px;
+        padding: 0px 6px 0px 6px ;
+        text-align: left;
+        margin: auto;">
+        
+        <input type="text" class="form-control" id="lokasilepasan"   name="lokasilepasan">
+        <input type="text" class="form-control" id="jumlahlepasan"  name="jumlahlepasan" onkeyup="getValueTotal()">
+    </div>
+
+    <div style=" display: grid;
+        grid-template-columns: 49% 49%;
+        gap: 10px;
+        padding: 0px 6px 0px 6px ;
+        text-align: left;
+        margin: auto;">
+        <label for="kodeBrg" class="form-label font-weight-bold text-primary mt-2 ml-1">Barcode</label>
+        <label for="valueallitem" class="form-label font-weight-bold text-primary m-2">Total Masuk</label>
+    </div>
+    <div style=" display: grid;
+        grid-template-columns: 49% 49%;
+        gap: 10px;
+        padding: 0px 6px 0px 6px ;
+        text-align: left;
+        margin: auto;">
+        <input type="text" class="form-control" id="barcode"  name="barcode">
+        <input type="text" class="form-control" id="jmlTotal" name="jmlTotal" readonly>
+    </div>
+
+    <div class="justify-content-end"  style=" display: grid;
+        grid-template-columns: 50%;
+        padding: 20px 6px 20px 0px;
+        text-align: center;
+        margin: auto;">
+        <button onclick="postDstoklokasi()" type="button" id="masukTabelBut" class="btn btn-success btn-m">
+          SIMPAN</button>
+      </div>
+     
+      <div style="
+        display: grid;
+        grid-template-columns: 100%;
+        text-align: left;
+        margin: auto;">
+
+        
+            
+            <div style="box-shadow: 2px 6px 10px 2px rgb(215, 215, 215); border-radius:8px;">
+                <div>
+                    <div>
+                        <label for="" class="form-label font-weight-bold text-primary" style="padding:20px 0px 0px 20px; font-size:24px" >Daftar Alokasi Barang</label>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive-md">
+                            <table class="table" id="listBarang">
+                                <thead>
+                                    <tr>
+                                    <th >Barcode</th>
+                                    <th >Lokasi</th>
+                                    <th >Jumlah</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                    </div>
+                </div>
+            </div>
+      <div>
+  
+     
+    
+     
+
+</body>
+
+
+</html>

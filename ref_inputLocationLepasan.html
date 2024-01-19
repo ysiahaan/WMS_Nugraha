@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Reffiler</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <!-- swal -->
+    <link
+      rel="stylesheet"
+      href="./asset/@sweetalert2/theme-material-ui/material-ui.css"
+    />
+    <script src="./asset/sweetalert2/dist/sweetalert2.all.js"></script>
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="js/jquery.autocomplete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      document.addEventListener("deviceready", onDeviceReady, false);
+
+      var lokasi = "";
+
+      function onDeviceReady() {
+        document.getElementById("input1").focus();
+      }
+
+      function openPrompt() {
+        var customPrompt = document.getElementById("customPrompt");
+        customPrompt.style.display = "block";
+        document.getElementById("prompt1").focus();
+      }
+
+      function submitPrompt() {
+        barcodenew = document.getElementById("prompt1").value;
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "GET",
+          UrlApi +
+            "/nug_api/inputNewLoc?namalogin=" +
+            user +
+            "&lokasi=" +
+            lokasi +
+            "&barcode=" +
+            barcodenew
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "namalogin=" + user + "&lokasi=" + lokasi;
+        console.log(data);
+        xhr.send(data);
+        xhr.onload = function () {
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            Swal.fire({
+              title: "Oops...",
+              text: msg,
+              icon: "warning",
+              confirmButtonText: "Back",
+            });
+            return;
+          } else {
+            var getData = obj.data.rows;
+            var label = getData[0]["perlucetakkarton"];
+            if (label == 1) {
+              label = "Cetak Label";
+            } else {
+              label = "Tidak";
+            }
+            document.getElementById("input1").value = "";
+            document.getElementById("input1").focus();
+            const t = document.querySelector("#bodytabelPending");
+            getData.forEach((item, i) => {
+              var row = document.createElement("tr"),
+                div1 = document.createElement("div"),
+                div2 = document.createElement("div"),
+                div3 = document.createElement("div"),
+                cell1 = document.createElement("th"),
+                cell2 = document.createElement("th"),
+                cell3 = document.createElement("th"),
+                cell4 = document.createElement("th"),
+                cell5 = document.createElement("th");
+              cell1.classList.add("card1"),
+                cell2.classList.add("card4"),
+                cell3.classList.add("card4"),
+                div1.classList.add("card6");
+              div2.classList.add("card7"), row.classList.add("row1");
+              var idrefil = item.idtemprefill;
+              cell1.innerHTML = item.namaBrg;
+              cell2.innerHTML = `STOK : ${item.stok}`;
+              cell3.innerHTML = item.barcode;
+              cell4.innerHTML = `Cetak Label : ${label}`;
+
+              div3.appendChild(cell1),
+                row.appendChild(div3),
+                div1.appendChild(cell3),
+                div1.appendChild(cell2),
+                row.appendChild(div1),
+                div2.appendChild(cell4),
+                div2.appendChild(cell5),
+                row.appendChild(div2),
+                t.appendChild(row);
+            });
+          }
+        };
+        closePrompt();
+      }
+
+      function batalPrompt() {
+        document.getElementById("prompt1").value = "";
+        var customPrompt = document.getElementById("customPrompt");
+        customPrompt.style.display = "none";
+      }
+
+      function closePrompt() {
+        var customPrompt = document.getElementById("customPrompt");
+        customPrompt.style.display = "none";
+      }
+      //----------------------------------------------------------------------------------------------------------------------------------------
+      function exeScan() {
+        let xhr = new XMLHttpRequest();
+        lokasi = document.getElementById("input1").value;
+        var cek = "";
+        cek = lokasi.indexOf(".");
+        if (lokasi == "") {
+          //alert("Lokasi Masih Kosong [!]");
+          Swal.fire({
+            title: "Oops...",
+            text: "Lokasi Masih Kosong",
+            icon: "warning",
+            confirmButtonText: "Back",
+          });
+          return;
+        }
+        if (cek != 1) {
+          //alert("Scan Bukan Lokasi");
+          Swal.fire({
+            title: "Oops...",
+            text: "Scan Bukan Lokasi",
+            icon: "warning",
+            confirmButtonText: "Back",
+          });
+          return;
+        }
+        xhr.open(
+          "GET",
+          UrlApi +
+            "/nug_api/getBrgDariLokEcer?namalogin=" +
+            user +
+            "&lokasi=" +
+            lokasi
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "namalogin=" + user + "&lokasi=" + lokasi;
+        console.log(data);
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "truee") {
+            Swal.fire({
+              title: "Oops...",
+              text: msg,
+              icon: "warning",
+              confirmButtonText: "Back",
+            });
+            return;
+          }
+          if (err == "true") {
+            Swal.fire({
+              title: "Input Lokasi baru",
+              showCancelButton: true,
+              confirmButtonText: "Ya",
+            }).then((result) => {
+              if (result.isConfirmed) {
+                openPrompt();
+                return;
+              }
+            });
+            document.getElementById("input1").focus;
+            document.getElementById("input1").value = "";
+            return;
+          } else {
+            var getData = obj.data.rows;
+            if (getData[0]["stok"] == 0) {
+              Swal.fire({
+                title: "Input Lokasi baru",
+                showCancelButton: true,
+                confirmButtonText: "Ya",
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  openPrompt();
+                  return;
+                }
+              });
+            }
+            var label = getData[0]["perlucetakkarton"];
+            if (label == 1) {
+              label = "Cetak Label";
+            } else {
+              label = "Tidak";
+            }
+            document.getElementById("input1").value = "";
+            document.getElementById("input1").focus();
+            const t = document.querySelector("#bodytabelPending");
+            getData.forEach((item, i) => {
+              var row = document.createElement("tr"),
+                div1 = document.createElement("div"),
+                div2 = document.createElement("div"),
+                div3 = document.createElement("div"),
+                cell1 = document.createElement("th"),
+                cell2 = document.createElement("th"),
+                cell3 = document.createElement("th"),
+                cell4 = document.createElement("th"),
+                cell5 = document.createElement("th");
+              cell1.classList.add("card1"),
+                cell2.classList.add("card4"),
+                cell3.classList.add("card4"),
+                div1.classList.add("card6");
+              div2.classList.add("card7"), row.classList.add("row1");
+              var idrefil = item.idtemprefill;
+              cell1.innerHTML = item.namaBrg;
+              cell2.innerHTML = `STOK : ${item.stok}`;
+              cell3.innerHTML = item.barcode;
+              cell4.innerHTML = `Cetak Label : ${label}`;
+
+              div3.appendChild(cell1),
+                row.appendChild(div3),
+                div1.appendChild(cell3),
+                div1.appendChild(cell2),
+                row.appendChild(div1),
+                div2.appendChild(cell4),
+                div2.appendChild(cell5),
+                row.appendChild(div2),
+                t.appendChild(row);
+            });
+          }
+        };
+      }
+
+      function exeDashboard() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeInput() {
+        location.href =
+          "ref_inputLocationLepasan.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeListTugas() {
+        location.href =
+          "ref_listTugas.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeListPalet() {
+        location.href =
+          "ref_listPalet.html?namalogin=" + user + "&level=" + level;
+      }
+      function exePindahLokasi() {
+        location.href =
+          "pindahLokasi.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeBack() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeRefresh() {
+        //location.href="scan_barang.html?namalogin="+user+"&level="+level
+        document.location.reload(true);
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 0px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <a onclick="exeBack()"
+          ><i
+            class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+            style="font-size: 25px"
+          ></i
+        ></a>
+        <div>
+          <h5 style="line-height: 20px; color: white">REFFILER</h5>
+          <h6 style="line-height: 0px; color: white">Scan Lokasi Lepasan</h6>
+        </div>
+      </div>
+      <div>
+        <a class="" data-bs-toggle="dropdown" href="">
+          <i
+            class="fas fa-bars fa-sm fa-fw mr-3 text-white"
+            style="font-size: 28px"
+          ></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="exeDashboard()">
+              <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>dashboard
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item active" onclick="exeInput()">
+              <i class="far fa-edit fa-sm fa-fw m-2 text-black"></i>Input Task
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeListTugas()">
+              <i class="fas fa-clipboard-list fa-sm fa-fw m-2 text-black"></i
+              >List Tugas
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeListPalet()">
+              <i class="fas fa-dolly-flatbed fa-sm fa-fw m-2 text-black"></i
+              >List Palet
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeRefresh()">
+              <i class="fas fa-sync fa-sm fa-fw m-2 text-black"></i>Refresh
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+    </div>
+
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 100%;
+        gap: 30px;
+        text-align: left;
+        margin: auto;
+        padding-bottom: 20px;
+      "
+    >
+      <div
+        style="
+          padding: 20px;
+          box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+          border-radius: 8px;
+        "
+      >
+        <div>
+          <div class="mt-2">
+            <label class="form-label font-weight-bold text-primary"
+              >Input Lokasi Lepasan:</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="input1"
+              placeholder="Enter Lokasi Lepasan"
+              name="input1"
+            />
+            <textarea id="login1" hidden></textarea>
+            <textarea id="user" hidden></textarea>
+          </div>
+          <div class="d-flex justify-content-between mt-3 mb-1">
+            <div class="justify-content-start">
+              <button
+                onclick="exeListTugas()"
+                type="button"
+                id="simpanButton"
+                class="btn btn-success btn-m"
+              >
+                Simpan
+              </button>
+            </div>
+            <div class="justify-content-start mr-2">
+              <button
+                onclick="exeScan()"
+                type="button"
+                id="addButton"
+                class="btn btn-primary btn-m"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+    <div style="border: none; text-align: -webkit-center">
+      <table id="tabelPending" style="width: 100%">
+        <thead></thead>
+        <tbody
+          id="bodytabelPending"
+          style="display: grid; padding: 0 10px; gap: 14px"
+        ></tbody>
+      </table>
+    </div>
+    <div class="custom-prompt" id="customPrompt" style="text-align: center">
+      <label for="inputName" style="color: black; font-weight: 700"
+        >Barcode Karton</label
+      >
+      <input
+        type="text"
+        id="prompt1"
+        class="form-control"
+        style="border-radius: 20px; text-align: center"
+        autofocus
+      />
+      <div style="display: flex">
+        <button
+          onclick="submitPrompt()"
+          class="btn btn-primary btn-m"
+          style="
+            border-radius: 20px;
+            width: 40%;
+            margin: 10px;
+            background: #ededed;
+            color: #7b7b7b;
+            font-weight: 900;
+            border: none;
+            box-shadow: 3px 3px 10px -1px #6d8dada6;
+          "
+        >
+          Input
+        </button>
+        <button
+          onclick="batalPrompt()"
+          class="btn btn-primary btn-m"
+          style="
+            border-radius: 20px;
+            width: 40%;
+            margin: 10px;
+            background: #ededed;
+            color: #7b7b7b;
+            font-weight: 900;
+            border: none;
+            box-shadow: 3px 3px 10px -1px #6d8dada6;
+          "
+        >
+          Batal
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

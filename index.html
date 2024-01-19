@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+    <title>Login</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+      rel="stylesheet"
+    />
+
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" type="text/css" />
+
+    <link rel="stylesheet" href="css/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto"
+      rel="stylesheet"
+    />
+
+    <!-- swal -->
+    <link
+      rel="stylesheet"
+      href="./asset/@sweetalert2/theme-material-ui/material-ui.css"
+    />
+    <script src="./asset/sweetalert2/dist/sweetalert2.all.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.autocomplete.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/index.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+      document.addEventListener("deviceready", onDeviceReady, false);
+
+      function onDeviceReady() {
+        //cobaLogin.addEventListener("touchend", exeCobaLogin, false);
+        cobaKeluar.addEventListener("touchend", failUUID, false);
+        document.addEventListener("backbutton", onBackKeyDown, false);
+        window.resolveLocalFileSystemURL(
+          cordova.file.externalDataDirectory + "password.txt",
+          gotFilePass,
+          fail
+        );
+        window.resolveLocalFileSystemURL(
+          cordova.file.externalDataDirectory + "superuser.txt",
+          gotFilePassSuper,
+          fail
+        );
+        window.plugins.uniqueDeviceID.get(successUUID, failUUID);
+      }
+      function fail(error) {
+        console.log(error.code);
+      }
+      function gotFilePass(fileEntry) {
+        fileEntry.file(function (file) {
+          var reader = new FileReader();
+          reader.onloadend = function (e) {
+            document.getElementById("listPass1").value = this.result;
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      function gotFilePassSuper(fileEntry) {
+        fileEntry.file(function (file) {
+          var reader = new FileReader();
+          reader.onloadend = function (e) {
+            document.getElementById("passsuperuser").value = this.result;
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      function onBackKeyDown(e) {
+        e.preventDefault();
+      }
+      function successUUID(uuid) {
+        document.getElementById("uuid1").value = uuid;
+      }
+
+      function failUUID(uuid) {
+        navigator.app.exitApp();
+      }
+
+      function exeCobaLogin() {
+        let xhr = new XMLHttpRequest();
+        var user1 = document.getElementById("user1").value;
+        var pass1 = document.getElementById("pass1").value;
+        if (user1 == "" && pass1 == "") {
+          Swal.fire({
+            title: "Oops...",
+            text: "Field Masih Kosong",
+            icon: "warning",
+            confirmButtonText: "Back",
+          });
+          return;
+        }
+        if (user1 == "") {
+          Swal.fire({
+            title: "Oops...",
+            text: "Id Kosong",
+            icon: "warning",
+            confirmButtonText: "Back",
+          });
+          return;
+        }
+        if (pass1 == "") {
+          Swal.fire({
+            title: "Oops...",
+            text: "Password Kosong",
+            icon: "warning",
+            confirmButtonText: "Back",
+          });
+          return;
+        }
+        console.log(UrlApi);
+        xhr.open(
+          "POST",
+          UrlApi + "/nug_api/login2?nama=" + user1 + "&password=" + pass1
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "nama=" + user1 + "&password=" + pass1;
+        console.log(data);
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            Swal.fire({
+              title: "Oops...",
+              text: msg,
+              icon: "warning",
+              confirmButtonText: "Back",
+            });
+            return;
+          }
+          var role = obj.role;
+          var level = obj.level;
+          if (role == "Sales") {
+            location.href =
+              "salesOrder_1.html?namalogin=" +
+              obj.namaLogin +
+              "&level=" +
+              obj.level;
+            return;
+          }
+          location.href =
+            "dashboard.html?namalogin=" + obj.namaLogin + "&level=" + obj.level;
+        };
+      }
+      function cobaTime() {
+        console.log("timed");
+      }
+
+      function exeSimpanKunci() {
+        window.resolveLocalFileSystemURL(
+          cordova.file.externalDataDirectory,
+          function (dir) {
+            dir.getFile("login.txt", { create: true }, function (file) {
+              logOb = file;
+              writeLogKunci(document.getElementById("user1").value);
+              //setTimeout(cobaTime,2000);
+            });
+          }
+        );
+      }
+
+      function writeLogKunci(str) {
+        if (!logOb) return;
+        var log = str;
+        logOb.createWriter(function (fileWriter) {
+          fileWriter.seek(0);
+          var blob = new Blob([log], { type: "text/plain" });
+          fileWriter.write(blob);
+          location.href = "timbangan.html?namalogin=";
+        }, fail);
+      }
+    </script>
+  </head>
+
+  <!--
+    <div id="Logo2" ><img src="img/hopescale_2.png" width="100%"></div>
+    <div>LOGIN</div><br><br>
+    USER:<textarea id="user1" rows="1" cols="15"></textarea>
+    <input type="text" class="form-control form-control-user" id="user1" name="username" >
+    <br>
+    PASS: <textarea id="pass1" rows="1" cols="15"></textarea>
+    <input type="password" class="form-control form-control-user" id="pass1" name="password">
+
+    <br>
+    <button id="cobaLogin" >Login</button> <button id="cobaKeluar" >Keluar</button><br>
+    <textarea id="uuid1" rows="1" cols="10" hidden></textarea>
+    <textarea id="listPass1" rows="5" cols="10" hidden></textarea>
+    
+  -->
+  <body
+    class="bg-gradient-light"
+    style="
+      background: linear-gradient(45deg, rgba(78, 115, 223, 0.5), transparent);
+    "
+  >
+    <div>
+      <!-- Outer Row -->
+      <div class="row justify-content-center">
+        <div class="col-lg-6">
+          <div class="text-center">
+            <p class="h4 font-weight-bold text-primary text-center mt-5">
+              <img src="asset/img/ign.png" class="rounded" width="100px" />
+            </p>
+          </div>
+          <div
+            class="card card-primary o-hidden border-0 shadow-lg my-5"
+            style="
+              border-bottom-left-radius: 60px;
+              border-top-right-radius: 60px;
+              background: rgb(255 255 255 / 50%);
+              margin: 30px;
+            "
+          >
+            <div class="card-body p-0">
+              <!-- Nested Row within Card Body -->
+              <div class="row">
+                <div class="col-lg">
+                  <div class="p-5">
+                    <div class="text-center">
+                      <h1 class="h4 text-gray-900 mb-4">W E L C O M E</h1>
+                    </div>
+                    <div class="form-group">
+                      <input
+                        type="text"
+                        class="form-control form-control-user"
+                        id="user1"
+                        placeholder="User"
+                        style="
+                          border-radius: 30px;
+                          border: none;
+                          /* border-bottom: 2px solid #bdbdbd; */
+                          /* border-right: 2px solid #bdbdbd; */
+                          box-shadow: 3px 4px 5px 0 grey;
+                        "
+                      />
+                    </div>
+                    <div class="form-group">
+                      <input
+                        type="password"
+                        class="form-control form-control-user"
+                        id="pass1"
+                        placeholder="Password"
+                        style="
+                          border-radius: 30px;
+                          border: none;
+                          /* border-bottom: 2px solid #bdbdbd; */
+                          /* border-right: 2px solid #bdbdbd; */
+                          box-shadow: 3px 4px 5px 0 grey;
+                        "
+                      />
+                    </div>
+                    <div style="display: flex; justify-content: center">
+                      <button
+                        id="cobaLogin"
+                        class="btn btn-primary btn-user btn-block"
+                        onclick="exeCobaLogin()"
+                        style="
+                          border-radius: 20px;
+                          width: 40%;
+                          margin: 10px;
+                          background: #ededed;
+                          color: #7b7b7b;
+                          border: none;
+                          box-shadow: 3px 3px 10px -1px #6d8dada6;
+                        "
+                      >
+                        Login
+                      </button>
+                      <button
+                        id="cobaKeluar"
+                        class="btn btn-primary btn-user btn-block"
+                        style="
+                          border-radius: 20px;
+                          width: 40%;
+                          margin: 10px;
+                          background: #ededed;
+                          color: #7b7b7b;
+                          border: none;
+                          box-shadow: 3px 3px 10px -1px #6d8dada6;
+                        "
+                      >
+                        Keluar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <textarea id="uuid1" rows="1" cols="10" hidden></textarea>
+          <textarea id="listPass1" rows="5" cols="10" hidden></textarea>
+          <textarea id="passsuperuser" rows="1" cols="10" hidden></textarea>
+          <textarea id="inUrlApi" rows="1" cols="10" hidden></textarea>
+        </div>
+      </div>
+      <div class="footer-copyright text-center py-3" style="color: black">
+        <a href="/"> PT INTI GUNA NUSANTARA</a>
+        <h6
+          class="m-5"
+          style="font-size: 24px; padding-top: 80px; color: aliceblue"
+        >
+          Version - 23.11.11.12 NEW
+        </h6>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="asset/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="asset/sb-admin-2.min.js"></script>
+  </body>
+</html>

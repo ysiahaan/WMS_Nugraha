@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title> Purchasing Order Detail</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css">
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css">
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet">
+    <link href="asset/css/nunito.css" rel="stylesheet">
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet">
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="js/jquery.autocomplete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js"  type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8" > 
+      
+
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    var nopo = GetURLParameter("nopo");
+    var getPODetList = [];
+    var getTerima = [];
+    var untukKirim=[];
+    var untukShow=[];
+    var getKB= [];
+    var receivePODetList = {};
+    var search = "";
+    var kodebar = "";
+    var nosj = "";
+    var kb1 = "";
+    var temp="";
+    var jumlahOrder = 0;
+    var jumlahSelesai = 0;
+    var order1 = 0;
+
+
+    function onDeviceReady() {   
+        //document.addEventListener("deviceready", receivePODet, false);
+        //document.addEventListener("deviceready", getPODet, false);
+        //console.log(receivePODetList);
+        getListReceive();
+        cekJumlahDatang();
+      }
+
+      function getListReceive(){
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET",UrlApi+"/nug_api/listReceivePODet?nopo="+nopo);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        let data = 'nopo='+nopo;
+        xhr.send(data);
+        xhr.onload = function () {
+          //console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var dataMain =  obj.data.rows;
+          for (var i=0;i<dataMain.length;i++) {
+            let data2={'nm':dataMain[i]["namabrg"],'jb':dataMain[i]["jmldatang"],'jo':dataMain[i]["jmlorder"],'js':dataMain[i]["jmldatang"]}
+            untukShow.push(data2);
+          }
+          getValueDictionary();
+          }
+        }      
+  
+
+    function cekJumlahDatang(){
+      let xhr = new XMLHttpRequest();
+      xhr.open("GET",UrlApi+"/nug_api/getCountPoDet?nopo="+nopo);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      let data = 'nopo='+nopo;
+      xhr.send(data);
+      xhr.onload = function () {
+        //console.log(this.responseText);
+        var obj = JSON.parse(this.responseText);
+        var dataMain =  obj.data.rows;
+        var brgDatang = dataMain[0]["jmldatang"];
+        var brgOrder = dataMain[0]["jmlorder"]; 
+        document.getElementById("infoOrder").innerHTML="Info Barang = "+brgDatang+"/"+brgOrder
+
+
+        }
+      }      
+
+
+     function functionkeyup(){
+        if(event.keyCode==13){
+          search = document.getElementById("namaSup").value;
+          if(search==""){
+            alert("Search Kosong [!]");
+            return;
+          }
+          receivePODet();
+        }
+     }
+
+     //---------------------------------------------------------------------- METODE PO BARU
+
+    function getPODetNew() {
+      search = document.getElementById("namaSup").value;
+      kodebar = document.getElementById("kodeBrg").value;
+      let xhr = new XMLHttpRequest();
+      xhr.open("GET",UrlApi+"/nug_api/getPODet?nopo="+nopo+"&kodebrg="+kodebar);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      let data = 'nopo='+nopo;
+      //console.log(data)
+      xhr.send(data);
+      xhr.onload = function () {
+        //console.log(this.responseText);
+        var obj = JSON.parse(this.responseText);
+        ////console.log(obj.data.rows)
+        var isiData=obj.data.rows;
+        var terima=receivePODetList;
+
+        // Hapus Baris Inner Html / KOLOM
+        var theTabel=document.getElementById("listSO");
+        theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0])
+        var tbody = document.createElement("tbody");
+        theTabel.appendChild(tbody)
+
+        //temp
+        temp = isiData[0]["namalengkap"];
+        jumlahOrder = isiData[0]["jumlahbarang"];
+        
+        var trims = temp.trim();
+        document.getElementById("namabrg").innerHTML = trims;
+
+        var trims2 = isiData[0]["jumlahbarang"]
+        order1=parseInt(trims2);
+        if(isNaN(order1)){order1=0};
+        document.getElementById("jmlorder").innerHTML = "Jumlah Order  : "+order1;
+
+        let penuh=terima[kodebar]
+        if(isNaN(penuh)){penuh=0};
+        document.getElementById("jmlselesai").innerHTML = "Jumlah Selesai : "+penuh
+
+        //sisa=order1-penuh
+        //document.getElementById("input2").value = 
+        document.getElementById("jmlterima").innerHTML = "<input type='text' class='form-control' id='input1' placeholder='Jumlah Terima' name='input1'>";
+        //document.getElementById("suratjalan").innerHTML = "<input type='text' class='form-control' id='input2' placeholder='Surat Jalan' name='input2'>";
+        }
+      }      
+    function receivePODetPostNew() {
+      let nosj = prompt('Surat Jalan');
+
+      //console.log(nosj);
+      var strKirim=JSON.stringify(untukKirim)
+      let xhr = new XMLHttpRequest();
+      xhr.open("POST", UrlApi + "/nug_api/receivePODet?nopo="+nopo+"&nosj="+nosj);
+      xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+       xhr.send(JSON.stringify(strKirim));
+       xhr.onload = function () {
+       ////console.log(this.responseText);
+       var obj = JSON.parse(this.responseText);
+       var err = obj.error
+       var msg = obj.msg
+       ////console.log(err);
+       if (err == "true") {
+         alert("Error");
+       } else {
+         alert("Selesai");
+         location.href="PO_daftarList.html?namalogin="+user+"&level="+level
+       }
+     }
+   }  
+    function getValueSearchNew(){
+      
+      //nosj = document.getElementById("input2").value;
+      ////console.log(document.getElementById("input1").value);
+      ////console.log(nosj);
+      if(search==""){
+        alert("Tidak Ada Barang [!]");
+        return;
+      } 
+      let jb1=document.getElementById("input1").value;
+      if(jb1==0){
+        alert("Jumlah Terima Kosong [!]");
+        return;
+      }
+      console.log(jb1);
+      console.log(order1);
+      if(jb1>order1){
+        if(confirm("Jumlah Barang Berlebih Yakin Masukan [!]")){
+        } else {
+          return;
+        }
+      }
+
+      kb1=kodebar;
+
+      let data2={'nm':temp,'jb':jb1,'jo':jumlahOrder,'js':jumlahSelesai}
+      untukShow.push(data2);
+
+      let data1={'kb':kb1,'jb':jb1,'hb':0,'sup':""}
+      untukKirim.push(data1);
+
+      document.getElementById("namabrg").innerHTML = "";
+      document.getElementById("jmlorder").innerHTML = "";
+      document.getElementById("jmlselesai").innerHTML = "";
+      document.getElementById("jmlterima").innerHTML = "";
+      //document.getElementById("suratjalan").innerHTML = "";
+      document.getElementById("namaSup").value = "";
+      document.getElementById("kodeBrg").value = "";
+      search="";
+
+      getValueDictionary();
+      alert("Success");
+    }
+
+
+    function getValueDictionary(){
+      // Hapus Baris Inner Html / KOLOM
+      var theTabel=document.getElementById("tabelShow");
+      theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0])
+      var tbody = document.createElement("tbody");
+      theTabel.appendChild(tbody)
+      for (var i=0;i<untukShow.length;i++) {
+        var row = document.createElement("tr");
+        var cell1 = document.createElement("td");
+        var cell2 = document.createElement("td");
+        var cell4 = document.createElement("td");
+        cell1.innerHTML = untukShow[i]["nm"];
+        cell2.innerHTML = untukShow[i]["jb"];
+        cell4.innerHTML = untukShow[i]["jo"];
+        row.appendChild(cell1);
+        row.appendChild(cell4);
+        row.appendChild(cell2);
+        tbody.appendChild(row);  
+    
+      }
+    }
+       
+   
+
+  //---------------------------------------------------------------------- CARA POST BARU
+
+if(0){
+
+  function receivePODetPost() {
+       ////console.log(getTerima.length)
+       var untukKirim=[]
+       for(var i=0;i<getTerima.length;i++){
+        ////console.log(getTerima[i].value,getKB[i])
+        if(getTerima[i].value!=0){  
+          let jb1=getTerima[i].value
+          kb1=getKB[i]
+
+          let data1={'kb':kb1,'jb':jb1,'hb':0,'sup':""}
+          untukKirim.push(data1)
+        }
+      }
+       var strKirim=JSON.stringify(untukKirim)
+       let xhr = new XMLHttpRequest();
+       xhr.open("POST", UrlApi + "/nug_api/receivePODet?nopo="+nopo);
+       xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        xhr.send(JSON.stringify(strKirim));
+        xhr.onload = function () {
+        ////console.log(this.responseText);
+        var obj = JSON.parse(this.responseText);
+        var err = obj.error
+        var msg = obj.msg
+        ////console.log(err);
+        if (err == "true") {
+          alert("Error");
+        } else {
+          alert("Selesai");
+          location.href="PO_daftarList.html?namalogin="+user+"&level="+level
+        }
+      }
+    }  
+
+    function getValueSearch(){
+         ////console.log(getTerima.length)
+       var untukKirim=[]
+       for(var i=0;i<getTerima.length;i++){
+        ////console.log(getTerima[i].value,getKB[i])
+        if(getTerima[i].value!=0){  
+          let jb1=getTerima[i].value
+          kb1=getKB[i]
+
+          let data1={'kb':kb1,'jb':jb1,'hb':0,'sup':""}
+          untukKirim.push(data1)
+        }
+      }
+       var strKirim=JSON.stringify(untukKirim)
+       let xhr = new XMLHttpRequest();
+       xhr.open("POST", UrlApi + "/nug_api/receivePODet?nopo="+nopo);
+       xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        xhr.send(JSON.stringify(strKirim));
+        xhr.onload = function () {
+        ////console.log(this.responseText);
+        var obj = JSON.parse(this.responseText);
+        var err = obj.error
+        var msg = obj.msg
+        ////console.log(err);
+        if (err == "true") {
+          alert("Error");
+        } else {
+          alert("Selesai");
+          //location.href="PO_daftarList.html?namalogin="+user+"&level="+level
+          document.getElementById("namaSup").value = "";
+          document.getElementById("kodeSup").value = "";
+          event.keyCode=13;
+          receivePODet();
+          functionkeyup();
+        }
+      }
+    }  
+    
+    function getPODet() {
+      search = document.getElementById("namaSup").value;
+      ////console.log(search);
+      var cek = 0;// searching kosong
+      var nourut = 1;
+      if(search==""){
+        ////console.log("search Kosong");
+        cek = 1; // searching ada
+        document.getElementById("kodeSup").value="";
+      }
+      let xhr = new XMLHttpRequest();
+      xhr.open("GET",UrlApi+"/nug_api/getPODet?nopo="+nopo);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      let data = 'nopo='+nopo;
+      //console.log(data)
+      xhr.send(data);
+      xhr.onload = function () {
+        ////console.log(this.responseText);
+        var obj = JSON.parse(this.responseText);
+        ////console.log(obj.data.rows)
+        var isiData=obj.data.rows;
+        var terima=receivePODetList
+        ////console.log("TERIMA",terima)
+        
+        //var theTabel=document.getElementById("listBarang");
+        //theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0])
+        //var theTabel=document.getElementById("listBarang");
+        //tbody = theTabel.getElementsByTagName("tbody")[0];
+
+        // Hapus Baris Inner Html / KOLOM
+        var theTabel=document.getElementById("listBarang");
+        theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0])
+        //
+        var tbody = document.createElement("tbody");
+        theTabel.appendChild(tbody)
+
+        for (var i=0;i<isiData.length;i++) {
+          var row = document.createElement("tr");
+          var cell = document.createElement("td");
+          var cell1 = document.createElement("td");
+          var cell2 = document.createElement("td");
+          var cell3 = document.createElement("td");
+          var cell4 = document.createElement("td");
+          var input1 = document.createElement("input");
+          var input2 = document.createElement("input");
+
+          cell1.classList.add("textInbuond");
+          cell1.innerHTML = isiData[i]["namalengkap"];
+          temp = isiData[i]["namalengkap"];
+          var trims = temp.trim();
+
+          ////console.log(temp);
+          ////console.log(search);
+          let order1=isiData[i]["jumlahbarang"]
+          if(isNaN(order1)){order1=0};
+          cell2.innerHTML = order1;
+          kb1=isiData[i]["kodebarang"]
+          let penuh =terima[kb1]
+          if(isNaN(penuh)){penuh=0};
+          cell3.innerHTML = penuh
+          sisa=order1-penuh
+          input1.value=sisa//="OK"
+          input1.type="text"//="text"
+          //input1.classList.add="md-2"
+          input1.classList.add("form-control");
+          input1.classList.add("mt-3");
+          input1.classList.add("input1");
+          input1.name="terima_"+i//="text"
+
+          
+          input2.value=0//="OK"
+          input2.type="text"//="text"
+          //input2.classList.add="md-2"
+          input2.classList.add("form-control");
+          input2.classList.add("mt-3");
+          input2.classList.add("input2");
+          input2.name="terima_"+i//="text"
+
+          getTerima.push(input2)
+          getKB.push(kb1)
+
+          cell.innerHTML = nourut++;
+          //cell4.appendChild = input1//"<input type='text' width=3 value='"+sisa+"' id='terima_"+i+"'>"
+          //input1 = cell4.document.get
+
+          ////console.log(cek);
+          ////console.log(trims);
+          ////console.log(search);
+          if(cek==0){
+            if(search==trims){
+              row.appendChild(cell);
+              row.appendChild(cell1);
+              row.appendChild(cell2);
+              row.appendChild(cell3);
+              cell4.appendChild(input2);
+              row.appendChild(cell4);
+              tbody.appendChild(row);  
+            }
+          }else{
+            row.appendChild(cell);
+            row.appendChild(cell1);
+            row.appendChild(cell2);
+            row.appendChild(cell3);
+            cell4.appendChild(input2);
+            //cell4.appendChild(input1);
+            row.appendChild(cell4);
+            tbody.appendChild(row);  
+          }
+           
+          }
+        }
+      }       
+
+    }
+
+    function receivePODet() {
+      
+      var temps = document.getElementById("kodeBrg").value;
+      var kodebar = temps.trim();
+      //console.log(kodebar);
+      let xhr = new XMLHttpRequest();
+      xhr.open("GET",UrlApi+"/nug_api/receivePODet?nopo="+nopo+"&kodebrg="+kodebar);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      let data = 'nopo='+nopo;
+      ////console.log(data)
+      xhr.send(data);
+      // CREATE OBJECT
+      let data1={}
+      xhr.onload = function () {
+        //console.log(this.responseText);
+        var obj = JSON.parse(this.responseText);
+        ////console.log(obj.data.rows)
+        var cekStatus=obj.data.total;
+        var isiData=obj.data.rows;
+        //for (var i=0;i<isiData.length;i++) {
+          //kb1=isiData[i]["kodebarang"]
+          //let jml=isiData[i]["jumlahbarang"] 
+          ////console.log(kb1);
+          // ISI OBJECT ["KEY":"VALUE"]
+          //data1[kb1]= jml
+        //}
+        kb1=kodebar
+        let jml=0
+        data1[kb1]=jml
+        if(cekStatus!=0){
+          kb1=isiData[0]["kodebarang"]
+          let jml=isiData[0]["jumlahbarang"]
+          data1[kb1]=jml
+        }
+        jumlahSelesai=data1;
+        receivePODetList=data1;
+        getPODetNew();
+      }
+    }    
+   
+    function exeDashboard(){
+      location.href="dashboard.html?namalogin="+user+"&level="+level
+    }
+    function exeInput(){
+      location.href="PO_daftarList.html?namalogin="+user+"&level="+level
+    }  
+    function exeBack(){
+      location.href="PO_daftarList.html?namalogin="+user+"&level="+level
+    }
+    function exeRefresh(){
+      //location.href="scan_barang.html?namalogin="+user+"&level="+level
+      document.location.reload(true);
+    }
+    function exeBelumDatang(){
+      location.href="PO_infoList.html?namalogin="+user+"&level="+level+"&nopo="+nopo
+    }
+    
+      </script>
+
+
+</head>
+
+
+<body id="page-top">
+
+    <div style="width: 100%;display: flex;background-image: linear-gradient(to right, rgb(34,151,238) , rgb(66, 215, 81)); padding: 16px 14px ;box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);align-items:center;">
+        <div style="width: 100%;display: flex; align-items:center;gap:12px;">
+          <a onclick="exeBack()"><i class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white" style="font-size: 25px;"></i></a>
+          <div>
+            <h5 style="line-height: 20px; color:white;" >PURCHASING ORDER</h2>
+            <h6 style="line-height: 0px; color: white">Detail Purchasing Order</h4>
+          </div>
+        </div>
+        <div>
+            
+          <a class="" data-bs-toggle="dropdown" href="">
+            <i class="fas fa-bars fa-sm fa-fw mr-3 text-white" style="font-size: 28px;"></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" onclick="exeDashboard()">
+            <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>Dashboard
+            </a>
+          </li>
+          <li><a class="dropdown-item" onclick="exeInput()">
+            <i class="far fa-edit fa-sm fa-fw m-2 text-black"></i>Home
+            </a>
+          </li>
+        
+          <li><a class="dropdown-item"  onclick="exeRefresh()">
+            <i class="fas fa-sync fa-sm fa-fw m-2 text-black"></i>Refresh
+            </a>
+          </li>
+         
+        </ul>
+              
+        </div>
+         <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+        </div>
+        
+        <!-- =================== =================== ================= ================ TABEL -->
+
+        <div style="
+        display: grid;
+        grid-template-columns: 100%;
+        gap: 30px;
+        padding: 0px 28px;
+        text-align: left;
+        margin: auto;">
+
+        <div>
+          <label for="input1" class="form-label font-weight-bold text-primary" style="padding:20px 0px 0px 20px; font-size:24px" >List Purchasing Order</label>
+          <div style="padding:5px 20px 0px 20px">
+            <input type="text" class="form-control" id="namaSup" placeholder="Searching" name="namaSup" onkeyup="functionkeyup()">
+            <input type="text" class="form-control" id="kodeSup" placeholder="Searching" name="kodeSup" hidden>   
+            <input type="text" class="form-control" id="kodeBrg" placeholder="Searching" name="kodeBrg" hidden>   
+          </div>
+        </div>
+
+        <div>
+          <p id="infoOrder" style="color: black; font-size:large"></p>
+        </div>
+            
+            <div style="box-shadow: 2px 6px 10px 2px rgb(215, 215, 215); border-radius:8px;">
+                <div>
+                    <div class="card-body">
+                        <div class="table-responsive-md">
+                            <table class="table" id="listSO">
+                                <thead>
+                                    <tr>
+                                      <p id="namabrg"></p>
+                                      <p id="jmlorder"></p>
+                                      <p id="jmlselesai"></p>
+                                      <div style="
+                                      display: grid;
+                                      grid-template-columns: 100%;
+                                      padding: 10px 10px;
+                                      text-align: left;
+                                      margin: auto;">
+                                        <p id="jmlterima"></p>
+                                      </div>
+                                      <p id="suratjalan"></p>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- <div class="card-body">
+                        <div class="table-responsive-md">
+                            <table class="table" id="listBarang">
+                                <thead>
+                                    <tr>
+                                    <th style="vertical-align:middle">NO</th>
+                                    <th style="vertical-align:middle">Nama Barang</th>
+                                    <th >Jumlah Order</th>
+                                    <th >Jumlah Selesai</th>
+                                    <th >Jumlah Terima</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                    </div> -->
+                      <div class="d-flex justify-content-between mt-3 mb-2">
+                        <div class="justify-content-start">
+                            <button onclick="receivePODetPostNew()" type="button" id="simpanButton" class="btn btn-success btn-m ml-2"></i>Selesai</button>
+                        </div>
+                        <div class="justify-content-start mr-2">
+                            <button onclick="getValueSearchNew()" type="button" id="Selesai" class="btn btn-primary btn-m"></i> Simpan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <div>
+              <label for="input1" class="form-label text-primary" style="font-size:20px" >History Purchasing Order</label>
+            </div>
+            <table class="table" id="tabelShow">
+              <thead>
+                  <tr>
+                      <th>Nama Barang</th>
+                      <th>Jumlah Order</th>
+                      <th>Jumlah Datang</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  
+              </tbody>
+          </table>
+        </div>
+      </body>
+      <script>
+        $(document).ready(function () {
+            
+          // let cariCus = document.getElementById("namaCus").value;
+          $("#namaSup").autocomplete({
+            serviceUrl: UrlApi + "/nug_api/getPODetAutoCom?nopo="+nopo,   // Kode php untuk prosesing data
+            //serviceUrl: UrlApi + "/nug_api/barangAutoCom",   // Kode php untuk prosesing data
+            dataType: "JSON",           // Tipe data JSON
+            onSelect: function (suggestion) {
+              $("#namaSup").val("" + suggestion.value);
+              $("#kodeSup").val("" + suggestion.value);
+              $("#kodeBrg").val("" + suggestion.data);
+            }
+          });
+      
+        });
+      </script>
+        
+</html>

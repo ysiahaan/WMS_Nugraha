@@ -1,0 +1,580 @@
+let jumlah = 0;
+let jumlahscan = 0;
+let jumlahpermintaan = 0;
+let itsFirst = 0;
+var item = 0;
+var tempIndex = 0;
+var fisrt = 0;
+let btnStock = "";
+var kodebarang = "";
+var barcode = "";
+var kodebrgpack = "";
+var kodebrgkarton = "";
+var scan = "";
+var jmlkarton = 0;
+var jmlperkarton = 0;
+var isiData = [];
+var namabarang = "";
+var satuan = "";
+var lokasi = GetURLParameter("lokasi");
+var jmlItem = GetURLParameter("jmlItem");
+var jumlahorder = GetURLParameter("jumlahorder");
+var index = GetURLParameter("index");
+var user = GetURLParameter("namalogin");
+var level = GetURLParameter("level");
+var so = GetURLParameter("so");
+kol = document.createElement("tr");
+cell = document.createElement("div");
+// var UrlApi = "http://zeppy2.ath.cx:5101";
+// var UrlApi = "http://192.168.10.222:3305";
+var UrlApi = "http://localhost:3305";
+document.addEventListener("deviceready", onDeviceReady, false);
+document.addEventListener("backbutton", function (e) {
+  e.preventDefault();
+});
+
+var url = UrlApi + "/nug_api/getDSOScan?noso=" + so + "&index=" + index;
+
+fetch(url)
+  .then((response) => {
+    if (!response.ok) {
+      alert("Terjadi Kesalahan Dalam Respons.");
+      return;
+      throw new Error("Terjadi kesalahan dalam respons.");
+    }
+    return response.json();
+  })
+  .then((data) => {
+    // Sukses, data dari server ada di sini
+    //alert("Sukses, Request Data.");
+    console.log(data);
+    var obj = data;
+    isiData = obj.data.rows;
+    console.log(isiData);
+    jmlkarton = isiData[0]["jmlkarton"];
+    namabarang = isiData[0]["namabarang"];
+    satuan = isiData[0]["satuan"];
+    jumlahpermintaan = isiData[0]["jumlahbarang"];
+    barcode = isiData[0]["kodebarang"];
+    jmlperkarton = jumlahpermintaan / jmlkarton;
+    kodebrgpack = isiData[0]["kodebrgpack"];
+    kodebrgkarton = isiData[0]["kodebrgkarton"];
+    jumlahpermintaan = parseInt(isiData[0]["jumlahbarang"]);
+    console.log(jmlperkarton);
+    item = isiData[0]["jmlItem"];
+    kodebarang = isiData[0]["Kode"];
+    tempIndex = item;
+    tempIndex--;
+
+    // SO
+    var theTabel = document.getElementById("listSO");
+    theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+    var tbody = document.createElement("tbody");
+    theTabel.appendChild(tbody);
+    var row = document.createElement("tr");
+    var cell1 = document.createElement("div");
+    cell1.classList.add("styleSO");
+    cell1.innerHTML = "SO : " + so;
+    row.appendChild(cell1);
+    tbody.appendChild(row);
+
+    // List
+    var theTabel = document.getElementById("listBarang");
+    theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+    var tbody = document.createElement("tbody");
+    theTabel.appendChild(tbody);
+    var row = document.createElement("tr");
+    var cell2 = document.createElement("div");
+    var cell3 = document.createElement("div");
+    cell2.classList.add("styleNamabrg");
+    cell3.classList.add("styleOrder");
+    cell2.innerHTML = namabarang;
+    cell3.innerHTML = "Jumlah Order : " + jumlahpermintaan + "  " + satuan;
+    row.appendChild(cell2);
+    row.appendChild(cell3);
+    tbody.appendChild(row);
+
+    //Icon
+    var theTabel = document.getElementById("tableIcon");
+    theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+    var tbody = document.createElement("tbody");
+    theTabel.appendChild(tbody);
+    var row = document.createElement("tr");
+    var icon = document.createElement("div");
+    icon.classList.add("imageIcon");
+    icon.innerHTML = "<img src='img/barcodeiconscan.jpg'>";
+    row.appendChild(icon);
+    tbody.appendChild(row);
+
+    // Button
+    tblButton();
+  })
+  .catch((error) => {
+    // Menangani kesalahan
+    console.error("Terjadi kesalahan Server", error);
+    alert("Request Gagal." + " (GET:/nug_api/getDSOScan)");
+    return;
+  });
+
+// let xhr = new XMLHttpRequest();
+// xhr.open("GET", UrlApi + "/nug_api/getDSOScan?noso=" + so + "&index=" + index);
+// xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+// let data = "noso=" + so + "&index=" + index;
+// //console.log(data);
+// xhr.send(data);
+// xhr.onload = function () {
+//   console.log(this.responseText);
+//   var obj = JSON.parse(this.responseText);
+//   var err = obj.error;
+//   var msg = obj.msg;
+//   if (err == "true") {
+//     alert(msg);
+//     return;
+//   }
+//   //console.log(obj.data.rows);
+
+//   //Inisialisasi
+//   isiData = obj.data.rows;
+//   jmlkarton = isiData[0]["jmlkarton"];
+//   namabarang = isiData[0]["namabarang"];
+//   satuan = isiData[0]["satuan"];
+//   jumlahpermintaan = isiData[0]["jumlahbarang"];
+//   barcode = isiData[0]["kodebarang"];
+//   jmlperkarton = jumlahpermintaan / jmlkarton;
+//   kodebrgpack = isiData[0]["kodebrgpack"];
+//   kodebrgkarton = isiData[0]["kodebrgkarton"];
+//   jumlahpermintaan = parseInt(isiData[0]["jumlahbarang"]);
+//   //console.log(jmlperkarton);
+//   item = isiData[0]["jmlItem"];
+//   kodebarang = isiData[0]["Kode"];
+//   tempIndex = item;
+//   tempIndex--;
+
+//   // SO
+//   var theTabel = document.getElementById("listSO");
+//   theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+//   var tbody = document.createElement("tbody");
+//   theTabel.appendChild(tbody);
+//   var row = document.createElement("tr");
+//   var cell1 = document.createElement("div");
+//   cell1.classList.add("styleSO");
+//   cell1.innerHTML = "SO : " + so;
+//   row.appendChild(cell1);
+//   tbody.appendChild(row);
+
+//   // List
+//   var theTabel = document.getElementById("listBarang");
+//   theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+//   var tbody = document.createElement("tbody");
+//   theTabel.appendChild(tbody);
+//   var row = document.createElement("tr");
+//   var cell2 = document.createElement("div");
+//   var cell3 = document.createElement("div");
+//   cell2.classList.add("styleNamabrg");
+//   cell3.classList.add("styleOrder");
+//   cell2.innerHTML = namabarang;
+//   cell3.innerHTML = "Jumlah Order : " + jumlahpermintaan + "  " + satuan;
+//   row.appendChild(cell2);
+//   row.appendChild(cell3);
+//   tbody.appendChild(row);
+
+//   //Icon
+//   var theTabel = document.getElementById("tableIcon");
+//   theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+//   var tbody = document.createElement("tbody");
+//   theTabel.appendChild(tbody);
+//   var row = document.createElement("tr");
+//   var icon = document.createElement("div");
+//   icon.classList.add("imageIcon");
+//   icon.innerHTML = "<img src='img/barcodeiconscan.jpg'>";
+//   row.appendChild(icon);
+//   tbody.appendChild(row);
+
+//   // Button
+//   tblButton();
+// };
+
+function onDeviceReady() {
+  document.getElementById("input1").focus();
+}
+function GetURLParameter(sParam) {
+  var sPageURL = window.location.search.substring(1);
+  var sURLVariables = sPageURL.split("&");
+  for (var i = 0; i < sURLVariables.length; i++) {
+    var sParameterName = sURLVariables[i].split("=");
+    if (sParameterName[0] == sParam) {
+      return sParameterName[1];
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------
+function exeScan() {
+  scan = document.getElementById("input1").value;
+  if (scan == "") {
+    alert("Input Data Terlebih Dahulu [!]");
+  } else {
+    if (isNaN(jumlahscan)) {
+      jumlahscan = 0;
+    }
+    if (scan == barcode) {
+      //barcode
+      jumlah = isiData[0]["jumlahbrg"];
+      jumlahscan = jumlahscan + parseInt(jumlah);
+    } else if (scan == kodebrgpack) {
+      //pack
+      jumlah = isiData[0]["jmlpack"];
+      jumlahscan = jumlahscan + parseInt(jumlah);
+    } else if (scan == kodebrgkarton) {
+      //karton
+      jumlah = isiData[0]["jmlkarton"];
+      jumlahscan = jumlahscan + parseInt(jumlah);
+    } else {
+      alert("Barcode Tidak Ditemukan [!]");
+      clearBarcode();
+
+      //console.log("Barcode Tidak Ditemukan [!]");
+    }
+    //console.log("ini adalah jumlah scan : ", jumlahscan);
+    if (jumlahscan > 0) {
+      exeTambah();
+    }
+  }
+}
+
+function myFocus() {
+  document.getElementById("inputScanValue").focus();
+}
+
+function exeTambah() {
+  const inputScanValue = document.getElementById("inputScanValue");
+  if (inputScanValue == "") {
+    console.log("kosong");
+    return;
+  }
+  var theTabel = document.getElementById("tableTambah");
+  tbody = theTabel.getElementsByTagName("tbody")[0];
+  var cell1 = document.createElement("div");
+  cell1.classList.add("inputStyle4");
+  cell1.innerHTML =
+    "<input onsubmit='exeTambahJumlahScan()' class='inputStyle4' type='text' id='input2' name='input2' value=" +
+    jumlahscan +
+    ">";
+  document.getElementById(
+    "valueScan"
+  ).innerHTML = `Item Picking : ${jumlahscan}`;
+  inputScanValue.value = jumlahscan;
+  btnStock = document.getElementsByName("btnStock")[0];
+  document.getElementById("inputScanValue").focus();
+  clearBarcode();
+  tblButton();
+}
+
+function clearBarcode() {
+  //console.log("CLEAR BARCODE");
+  document.getElementById("input1").value = "";
+}
+
+function exeTambahJumlahScan() {
+  //console.log("sebelum : ", jumlah, jumlahscan);
+  jumlah = document.getElementById("inputScanValue").value;
+  jumlahscan = parseInt(jumlah);
+  document.getElementById("inputScanValue").value = jumlah;
+  document.getElementById(
+    "valueScan"
+  ).innerHTML = `Item Picking new: ${jumlah}`;
+  //console.log("sesudah : ", jumlah, jumlahscan);
+  document.getElementsByName("btnStock").innerHTML = "";
+  document.getElementById("input1").focus();
+}
+
+function onChangeValueScan(input) {
+  btnStock.classList.remove("btn-danger");
+  btnStock.classList.remove("btn-primary");
+  //console.log(jumlahorder, item);
+  if (jumlahorder == item) {
+    if (parseInt(input.value) < jumlahpermintaan) {
+      btnStock.classList.add("btn-primary");
+      btnStock.innerText = "Stok Habis, Picking Selesai";
+      return;
+    } else if (parseInt(input.value) == jumlahpermintaan) {
+      btnStock.classList.add("btn-primary");
+      btnStock.innerText = "Picking Selesai";
+      return;
+    } else if (parseInt(input.value) > jumlahpermintaan) {
+      btnStock.classList.add("btn-danger");
+      btnStock.innerText = "Jumlah Picking Berlebih [!]";
+      return;
+    }
+  } else {
+    if (parseInt(input.value) < jumlahpermintaan) {
+      btnStock.classList.add("btn-primary");
+      btnStock.innerText = "Stok Habis, Lokasi Berikutnya";
+      return;
+    } else if (parseInt(input.value) == jumlahpermintaan) {
+      btnStock.classList.add("btn-primary");
+      btnStock.innerText = "Next Lokasi";
+      return;
+    } else if (parseInt(input.value) > jumlahpermintaan) {
+      btnStock.classList.add("btn-danger");
+      btnStock.innerText = "Jumlah Picking Berlebih [!]";
+      return;
+    }
+  }
+
+  return;
+}
+
+function tblButton() {
+  if (fisrt == 1) {
+    kol.appendChild(cell);
+  }
+  //console.log(jumlahorder, item);
+  if (jumlahorder == item) {
+    if (jumlahscan < jumlahpermintaan) {
+      var theTabel = document.getElementById("tableButton");
+      tbody = theTabel.getElementsByTagName("tbody")[0];
+      cell.classList.add("styleButton2");
+      cell.innerHTML =
+        "<button onclick='putPicking()' name='btnStock' id='btnStock' type='button' class='btn btn-primary'>Stok Habis, Picking Selesai</button>";
+      kol.appendChild(cell);
+      tbody.appendChild(kol);
+      fisrt = 1;
+      return;
+    } else if (jumlahscan == jumlahpermintaan) {
+      var theTabel = document.getElementById("tableButton");
+      tbody = theTabel.getElementsByTagName("tbody")[0];
+      cell.classList.add("styleButton2");
+      cell.innerHTML =
+        "<button onclick='putPicking()' name='btnStock' id='btnStock' type='button' class='btn btn-primary'>Picking Selesai</button>";
+      kol.appendChild(cell);
+      tbody.appendChild(kol);
+      fisrt = 1;
+      return;
+    } else if (jumlahscan > jumlahpermintaan) {
+      var theTabel = document.getElementById("tableButton");
+      tbody = theTabel.getElementsByTagName("tbody")[0];
+      cell.classList.add("styleButton2");
+      cell.innerHTML =
+        "<button name='btnStock' id='btnStock' type='button'  class='btn btn-danger'>Jumlah Picking Berlebih [!]</button>";
+      kol.appendChild(cell);
+      tbody.appendChild(kol);
+      fisrt = 1;
+      return;
+    }
+  } else {
+    if (jumlahscan < jumlahpermintaan) {
+      var theTabel = document.getElementById("tableButton");
+      tbody = theTabel.getElementsByTagName("tbody")[0];
+      cell.classList.add("styleButton2");
+      cell.innerHTML =
+        "<button onclick='putPicking()' name='btnStock'  id='btnStock'type='button' class='btn btn-primary'>Stok Habis, Lokasi Berikutnya</button>";
+      kol.appendChild(cell);
+      tbody.appendChild(kol);
+      fisrt = 1;
+      return;
+    } else if (jumlahscan == jumlahpermintaan) {
+      var theTabel = document.getElementById("tableButton");
+      tbody = theTabel.getElementsByTagName("tbody")[0];
+      cell.classList.add("styleButton2");
+      cell.innerHTML =
+        "<button onclick='putPicking()' name='btnStock' id='btnStock' type='button' class='btn btn-primary'>Next Lokasi</button>";
+      kol.appendChild(cell);
+      tbody.appendChild(kol);
+      fisrt = 1;
+      return;
+    } else if (jumlahscan > jumlahpermintaan) {
+      var theTabel = document.getElementById("tableButton");
+      tbody = theTabel.getElementsByTagName("tbody")[0];
+      cell.classList.add("styleButton2");
+      cell.innerHTML =
+        "<button  name='btnStock' id='btnStock' type='button' class='btn btn-danger'>Jumlah Picking Berlebih [!]</button>";
+      kol.appendChild(cell);
+      tbody.appendChild(kol);
+      fisrt = 1;
+      return;
+    }
+  }
+}
+
+function putPicking() {
+  document.getElementById("btnStock").disabled = true;
+  console.log("========function Put Picking===========");
+  console.log("jumlah : ", jumlahscan);
+  console.log("order : ", jumlahorder);
+  console.log("Item : ", parseInt(item));
+  console.log("index : ", index);
+  console.log("SO : ", so);
+  console.log("Jumlah Permintaan : ", jumlahpermintaan);
+  console.log("Lokasi : ", lokasi);
+  console.log("kodebar : ", kodebarang);
+  console.log("picker : ", user);
+  jmlperkarton = jumlahscan / jmlkarton;
+  console.log("jumlah per item : ", jmlperkarton);
+  //return;
+
+  if (jumlahscan < jumlahpermintaan) {
+    if (confirm("Jumlah Permintaan Kurang, Yakin Lanjut ? ")) {
+    } else {
+      document.getElementById("btnStock").disabled = false;
+      return;
+    }
+  } else if (jumlahscan > jumlahpermintaan) {
+    if (confirm("Jumlah Scan Lebih Dari Jumlah Permintaan, Yakin Lanjut ?")) {
+    } else {
+      document.getElementById("btnStock").disabled = false;
+      return;
+    }
+  }
+
+  var url =
+    UrlApi +
+    "/nug_api/getDSOScan?noso=" +
+    so +
+    "&index=" +
+    index +
+    "&jumlahScan=" +
+    jumlahscan +
+    "&picker=" +
+    user +
+    "&lokasi=" +
+    lokasi +
+    "&kodebar=" +
+    kodebarang +
+    "&jmlScanKarton=" +
+    jmlperkarton;
+
+  fetch(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        alert("Terjadi kesalahan Dalam Respons.");
+        throw new Error("Terjadi kesalahan dalam respons.");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Sukses, data dari server ada di sini
+      console.log("Sukses");
+    })
+    .catch((error) => {
+      // Menangani kesalahan
+      document.getElementById("btnStock").disabled = false;
+      alert("Request Gagal. (PUT:/nug_api/getDSOScan)");
+
+      console.log("Terjadi kesalahan");
+    });
+
+  // let xhr = new XMLHttpRequest();
+  // xhr.open(
+  //   "PUT",
+  //   UrlApi +
+  //     "/nug_api/getDSOScan?noso=" +
+  //     so +
+  //     "&index=" +
+  //     index +
+  //     "&jumlahScan=" +
+  //     jumlahscan +
+  //     "&picker=" +
+  //     user +
+  //     "&lokasi=" +
+  //     lokasi +
+  //     "&kodebar=" +
+  //     kodebarang +
+  //     "&jmlScanKarton=" +
+  //     jmlperkarton
+  // );
+
+  // xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  // let data =
+  //   "noso=" +
+  //   so +
+  //   "&index=" +
+  //   index +
+  //   "&jumlahScan=" +
+  //   jumlah +
+  //   "&picker=" +
+  //   user;
+  // xhr.send(data);
+  // console.log(xhr.status);
+  // xhr.onerror = function () {
+  //   console.log("on Error");
+  //   alert("Terjadi kesalahan jaringan");
+  // };
+  // xhr.onload = function () {
+  //   if (xhr.status === 200) {
+  //     //console.log(this.responseText);
+  //     if (index == tempIndex) {
+  //       getNextLocation();
+  //       return;
+  //     }
+  //     index++;
+  //     getNextLocation();
+  //   } else {
+  //     console.log("!=200");
+  //     alert("ERROR, DATA TIDAK DIAKSES");
+  //   }
+  // };
+  // xhr.onreadystatechange = function () {
+  //   if (xhr.readyState === 4 && xhr.status === 0) {
+  //     // Status 0 menunjukkan adanya kesalahan jaringan atau koneksi yang ditolak
+  //     console.log("Koneksi ditolak atau terjadi kesalahan jaringan.");
+  //   }
+  // };
+}
+
+function getNextLocation() {
+  if (jumlahorder == item) {
+    alert("SO Selesai, Terima Kasih");
+    location.href = "picking_scanSO.html?namalogin=" + user + "&level=" + level;
+    return;
+  }
+
+  jumlahorder++;
+  jmlItem--;
+  location.href =
+    "picking_scanLokasi.html?namalogin=" +
+    user +
+    "&so=" +
+    so +
+    "&index=" +
+    index +
+    "&jumlahorder=" +
+    jumlahorder +
+    "&jmlItem=" +
+    jmlItem +
+    "&level=" +
+    level;
+}
+
+function exeDashboard() {
+  if (confirm("Confirm")) {
+    location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+  } else {
+    return false;
+  }
+}
+function exeHome() {
+  if (confirm("Confirm")) {
+    location.href = "picking_scanSO.html?namalogin=" + user + "&level=" + level;
+  } else {
+    return false;
+  }
+}
+function exeBack() {
+  if (confirm("Confirm")) {
+    location.href = "picking_scanSO.html?namalogin=" + user + "&level=" + level;
+  } else {
+    return false;
+  }
+}
+function exeRefresh() {
+  //location.href="scan_barang.html?namalogin="+user+"&level="+level
+  //showBarang();
+  document.getElementById("input1").focus();
+  location.reload();
+}

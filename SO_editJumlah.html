@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title> Stok Opname </title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css">
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css">
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet">
+    <link href="asset/css/nunito.css" rel="stylesheet">
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet">
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js"  type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8" > 
+      
+    document.addEventListener("deviceready", onDeviceReady, false);
+    var satuan=GetURLParameter('satuan');
+    var namasatuan=GetURLParameter("namasatuan");
+
+    function onDeviceReady() {
+        document.getElementById("lokasikarton").value=GetURLParameter('lokasi');
+        document.getElementById("kodebar").value=GetURLParameter('kodebarang');
+        document.getElementById("kodekarton").value=GetURLParameter('kodekarton');
+        if(namasatuan==1){
+          document.getElementById("desSO").innerHTML="KARTON"
+        }else{
+          document.getElementById("desSO").innerHTML="LEPASAN"
+        }
+        //simpanButton.addEventListener('touchend', exeDaftarBarang, false); 
+        
+        //document.getElementById("namaid").innerHTML=GetURLParameter
+    }
+//----------------------------------------------------------------------------------------------------------------------------------------
+function exeScan()
+    {
+      var jumlah=document.getElementById("input3").value;
+      var kodebarang=document.getElementById("input2").value;
+      var lokasi=document.getElementById("input1").value;
+      var cek =lokasi.indexOf(".");
+      var cek2 =kodebarang.indexOf(".");
+      if(jumlah=="" || kodebarang=="" || lokasi==""){
+        alert("Jumlah e Kosong Le");
+      }else{
+        if(cek!=1){
+          alert("Scan Bukan Lokasi");
+          return;
+        } 
+        if(cek2==1){
+          alert("Scan Bukan Barcode");
+          return;
+        } 
+        let xhr = new XMLHttpRequest();
+    
+        var kodekarton=document.getElementById("kodekarton").value;
+        var satuan=GetURLParameter("satuan");
+        //console.log(status);
+        //console.log(jumlah);
+        //console.log(kodebarang);
+        //console.log(lokasi);
+        xhr.open("PUT",UrlApi+"/nug_api/isiStokLokasi?lokasi="+lokasi+"&kodebrgkarton="+kodebarang+"&namalogin="+user+"&jumlahbrg="+jumlah);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        let data = 'lokasi='+lokasi+'&kodebarang='+kodebarang+'&namalogin='+user+'&jumlahbarang='+jumlah;  
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+        //console.log(this.responseText);
+        var obj=JSON.parse(this.responseText);
+        var msg=obj.msg;
+        var err=obj.error;
+        console.log(err);
+
+        if(err=="true"){
+          alert("Data Tidak Valid")
+          return;
+        }
+       
+            if(satuan==1){
+              alert(msg+" Sebanyak "+jumlah+ " Karton");
+              location.href="SO_scanLokasiKarton.html?namalogin="+user+"&level="+level+"&satuan=1"+"&namasatuan="+namasatuan
+            }else{
+              alert(msg+" Sebanyak "+jumlah+ " Karton");
+              location.href="SO_scanLokasiKarton.html?namalogin="+user+"&level="+level+"&satuan=0"+"&namasatuan="+namasatuan
+            }
+          }
+        
+      }
+    };   
+    
+    function exeDashboard(){
+    
+        location.href="dashboard.html?namalogin="+user+"&level="+level
+      }
+      function exeHome(){
+    
+        
+        location.href="SO_scanLokasiKarton.html?namalogin="+user+"&level="+level+"&satuan="+satuan+"&namasatuan="+namasatuan
+      }
+      function exeBack(){
+    
+        location.href="SO_scanLokasiKarton.html?namalogin="+user+"&level="+level+"&satuan="+satuan+"&namasatuan="+namasatuan
+      }
+      function exeEdit(){
+    
+        location.href="SO_editJumlah.html?namalogin="+user+"&level="+level+"&satuan="+satuan+"&namasatuan="+namasatuan
+      }
+      function exeDelete(){
+    
+        location.href="SO_hapusBarang.html?namalogin="+user+"&level="+level+"&satuan="+satuan+"&namasatuan="+namasatuan
+      }
+      function exePindahLokasi(){
+    
+        location.href="pindahLokasi.html?namalogin="+user+"&level="+level+"&satuan="+satuan+"&namasatuan="+namasatuan
+      }
+      function exeRefresh(){
+    
+        //location.href="scan_barang.html?namalogin="+user+"&level="+level
+        document.location.reload(true);
+      }
+        </script>
+
+
+</head>
+
+
+<body id="page-top">
+
+    <div style="width: 100%;display: flex;background-image: linear-gradient(to right, rgb(34,151,238) , rgb(66, 215, 81)); padding: 16px 14px ;box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);align-items:center;">
+        <div style="width: 100%;display: flex; align-items:center;gap:12px;">
+            <a onclick="exeBack()"><i class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white" style="font-size: 25px;"></i></a>
+          <div>
+            <h5 style="line-height: 20px; color:white;" >STOK OPNAME</h2>
+            <h6 style="line-height: 0px; color: white">Edit Jumlah <a id="desSO"></a></h4>
+          </div>
+        </div>
+        <div>
+            
+                <a class="" data-bs-toggle="dropdown" href="">
+                    <i class="fas fa-bars fa-sm fa-fw mr-3 text-white" style="font-size: 28px;"></i>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" onclick="exeDashboard()">
+                    <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>Dashboard
+                    </a>
+                  </li>
+                  <li><a class="dropdown-item" onclick="exeHome()">
+                    <i class="fas fas fa-clipboard-list fa-sm fa-fw m-2 text-black"></i>Home
+                    </a>
+                  </li>
+                  <li><a class="dropdown-item active" onclick="exeEdit()">
+                    <i class="fas fa-edit fa-sm fa-fw m-2 text-black"></i>Edit
+                    </a>
+                  </li>
+                  <li><a class="dropdown-item" onclick="exeDelete()">
+                    <i class="fas fa-trash-restore-alt fa-sm fa-fw m-2 text-black"></i>Hapus
+                    </a>
+                  </li>
+                  <li><a class="dropdown-item"  onclick="exeRefresh()">
+                    <i class="fas fa-sync fa-sm fa-fw m-2 text-black"></i>Refresh
+                    </a>
+                  </li>
+                 
+                </ul>
+              
+        </div>
+         <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+        </div>
+        
+        <div >
+            
+            <div style="padding:20px;  box-shadow: 2px 6px 10px 2px rgb(215, 215, 215); border-radius:8px;">
+                <div>
+                    <div>
+                        <label for="input1" class="form-label font-weight-bold text-primary" >Input Lokasi :</label>
+                        <input type="text" class="form-control" id="input1" placeholder="Enter Lokasi" name="input1">
+                        <textarea id="login1"hidden></textarea>
+                        <textarea id="user" hidden></textarea>
+                        <textarea id="lokasikarton" hidden></textarea>
+                        <textarea id="kodebar" hidden></textarea>
+                        <textarea id="kodekarton" hidden></textarea>
+                    </div>
+                    <div class="mt-3">
+                        <label for="input2" class="form-label font-weight-bold text-primary" >Input Kode :</label>
+                        <input type="text" class="form-control" id="input2" placeholder="Enter Kode" name="input2">
+                    </div>
+                    <div class="mt-3">
+                        <label for="input3" class="form-label font-weight-bold text-primary" >Input Jumlah :</label>
+                        <input type="number" class="form-control" id="input3" placeholder="Enter Jumlah" name="input3">
+                    </div>
+                    <div class="d-flex justify-content-end mt-3 mb-1">
+                        <div class="justify-content-start mr-2">
+                            <a onclick="exeScan()"><i class="fas fa-plus-square m-2 text-green" style="font-size: 35px; color:rgb(34,151,238)"></i></a>
+                        </div>
+                    </div>
+            </div>
+            
+           
+           
+      <div>
+        
+      </div>
+        </div>
+      </body>
+        
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title> Input Located Inbound </title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css">
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css">
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet">
+    <link href="asset/css/nunito.css" rel="stylesheet">
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet">
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js"  type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8" > 
+      
+    var nama = "";
+
+    var palet = "";
+    var barcode = "";
+    var jumlah = 0;  
+    var jumlahbarang = 0;
+    var totalpcskarton = 0;
+    var isiData = {}
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    function onDeviceReady() {
+     
+    }
+//----------------------------------------------------------------------------------------------------------------------------------------
+    
+function functionKeyCode(){
+  if(event.keyCode==13){
+    palet=document.getElementById("input1").value;
+    showBarang();
+  }
+}
+
+
+function showBarang() {
+  //console.log(palet);
+  let xhr = new XMLHttpRequest();
+  xhr.open("GET",UrlApi+"/nug_api/getStokLocation?lokasi="+palet);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  let data = 'lokasi='+palet;
+  //console.log(data)
+  xhr.send(data);
+  xhr.onload = function () {
+    //console.log(this.responseText);
+    var obj = JSON.parse(this.responseText);
+    var err = obj.error;
+    var msg = obj.msg;
+    if(err == 'true'){
+      alert(msg); 
+      return;
+    }
+    //console.log(obj.data.rows)
+    var isiData=obj.data.rows;
+    // Hapus Baris Inner Html / KOLOM
+    var theTabel=document.getElementById("listBarang");
+    theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0])
+    //
+    var tbody = document.createElement("tbody");
+    theTabel.appendChild(tbody)
+    for (var i=0;i<isiData.length;i++) {
+      var row = document.createElement("tr");
+      var cell1 = document.createElement("td");
+      var cell2 = document.createElement("td");
+      var cell3 = document.createElement("td");
+      
+      cell1.innerHTML = isiData[i]["namabrg"];
+      cell2.innerHTML = isiData[i]["jumlahbarang"];
+      cell3.innerHTML = isiData[i]["lokasi"];
+      row.appendChild(cell1);
+      row.appendChild(cell2);
+      row.appendChild(cell3);
+      tbody.appendChild(row);  
+      
+    }
+  }
+}   
+
+
+    function exeScan()
+    {
+      let xhr = new XMLHttpRequest();
+      palet=document.getElementById("input1").value;
+      barcode=document.getElementById("input2").value;
+      jumlah = document.getElementById("input3").value;
+      if(palet==""){
+        alert("Palet Kosong");
+        return;
+      }
+      if(barcode==""){
+        alert("Barcode Kosong");
+        return;
+      }
+      if(jumlah==""){
+        alert("Jumlah Kosong");
+        return;
+      }
+      xhr.open("POST", UrlApi+"/nug_api/isiStokPalet?namalogin="+user+"&lokasi="+palet+"&kodebrg="+barcode+"&jumlahkarton="+jumlah+"&jumlahbarang="+totalpcskarton);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      let data = 'namalogin='+user+'&lokasi='+palet+'&kodebrg='+barcode+'&jumlah='+jumlah;
+      //console.log(data)
+      xhr.send(data);
+      xhr.onload = function () {
+        //console.log(this.responseText);
+        var obj = JSON.parse(this.responseText);
+        document.getElementById("input2").value = "";
+        document.getElementById("input3").value = "";
+        document.getElementById("jumlahkarton").value = "";
+        document.getElementById("totalkarton").value ="";
+        showBarang();
+      }
+      
+    };   
+
+
+    function getJmlPcs(){
+        //console.log(event.keyCode);
+        if(event.keyCode==13){
+        barcode=document.getElementById("input2").value;
+        //console.log(barcode);
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", UrlApi+"/nug_api/barangdet?kodebrg="+barcode);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        let data = 'kodebrg='+barcode;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          //console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          isiData=obj.data.rows;
+          nama = isiData[0]["namabrg"];
+          jumlahbarang = isiData[0]["jmlkarton"];
+          //alert(jumlahbarang);
+          document.getElementById("jumlahkarton").value = jumlahbarang;
+          document.getElementById("input3").focus();
+        }
+    }
+    }   
+
+    function getTotalPcs(){
+        jumlah = document.getElementById("input3").value;
+        totalpcskarton =  jumlahbarang*jumlah;
+        document.getElementById("totalkarton").value = totalpcskarton;
+    }
+    
+    
+   
+    function exeDashboard(){
+        location.href="dashboard.html?namalogin="+user+"&level="+level
+      }
+      function exeInput(){
+        location.href="inbound_inputPalet.html?namalogin="+user+"&level="+level
+      }
+      function exeInputLepasan(){
+        location.href="Inbound_InputPaletLepasan.html?namalogin="+user+"&level="+level
+      }
+      
+      function exeListPalet(){
+        location.href="Inbound_daftarInbound.html?namalogin="+user+"&level="+level
+      }
+      function exeBack(){
+        location.href="Inbound_daftarInbound.html?namalogin="+user+"&level="+level
+      }
+      function exeRefresh(){
+        //location.href="scan_barang.html?namalogin="+user+"&level="+level
+        document.location.reload(true);
+      }
+        </script>
+
+
+</head>
+
+
+<body id="page-top">
+    <div style="width: 100%;display: flex;background-image: linear-gradient(to right, rgb(34,151,238) , rgb(66, 215, 81)); padding: 16px 14px ;box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);align-items:center;">
+        <div style="width: 100%;display: flex; align-items:center;gap:12px;">
+          <a onclick="exeBack()"><i class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white" style="font-size: 25px;"></i></a>
+          <div>
+            <h5 style="line-height: 20px; color:white;" >INBOUND INPUT PALET</h2>
+            <h6 style="line-height: 0px; color: white">Input Palet Kartonan</h4>
+          </div>
+        </div>
+        <div>
+            
+                <a class="" data-bs-toggle="dropdown" href="">
+                    <i class="fas fa-bars fa-sm fa-fw mr-3 text-white" style="font-size: 28px;"></i>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" onclick="exeDashboard()">
+                      <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>dashboard
+                      </a>
+                    </li>
+                    <li><a class="dropdown-item" onclick="exeListPalet()">
+                      <i class="far fa-edit fa-sm fa-fw m-2 text-black"></i>Home
+                      </a>
+                    </li>
+                    <li><a class="dropdown-item"  onclick="exeInput()">
+                      <i class="fas fa-dolly-flatbed fa-sm fa-fw m-2 text-black"></i>Input Palet Kartonan
+                      </a>
+                    </li>
+                    <li><a class="dropdown-item"  onclick="exeInputLepasan()">
+                      <i class="fas fa-dolly-flatbed fa-sm fa-fw m-2 text-black"></i>Input Palet Lepasan
+                      </a>
+                    </li>
+                    <li><a class="dropdown-item"  onclick="exeRefresh()">
+                      <i class="fas fa-sync fa-sm fa-fw m-2 text-black"></i>Refresh
+                      </a>
+                    </li>
+                   
+                  </ul>
+              
+        </div>
+         <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+        </div>
+        
+        <div style="
+        display: grid;
+        grid-template-columns: 100%;
+        gap: 30px;
+        padding: 30px 24px;
+        text-align: left;
+        margin: auto;">
+            
+            <div style="padding:20px;  box-shadow: 2px 6px 10px 2px rgb(215, 215, 215); border-radius:8px;">
+                <div>
+                   <div>
+                        <label for="input1" class="form-label font-weight-bold text-primary" >Input Palet:</label>
+                        <input type="text" class="form-control" id="input1" placeholder="Enter Palet" name="input1" onkeyup="functionKeyCode()">
+
+                    </div>
+                    <div class="mt-3">
+                        <label for="input2" class="form-label font-weight-bold text-primary" >Input Barcode:</label>
+                        <input type="text" class="form-control" id="input2" placeholder="Enter Barcode" name="input2" onkeyup="getJmlPcs()">
+
+                    </div>
+                    <div class="mt-3">
+                        <label for="input3" class="form-label font-weight-bold text-primary" >Input Jumlah</label>
+                        <input type="text" class="form-control" id="input3" placeholder="Enter Jumlah Karton" name="input3" onkeyup="getTotalPcs()">
+                    </div>
+                    <div style=" display: grid;
+                        grid-template-columns: 50% 50%;
+                        padding-top: 20px;
+                        text-align: left;
+                        margin: auto;">
+
+                        <div style=" display: grid;
+                            grid-template-columns: 80%;
+                            text-align: left;
+                            margin: auto;">
+
+                            <label for="jumlahkarton"  class="form-label font-weight-bold text-primary" >Jumlah Pcs PerKarton</label>
+                            <input type="text" class="form-control" id="jumlahkarton"readonly>
+
+                        </div>
+                        <div style=" display: grid;
+                            grid-template-columns: 80%;
+                            text-align: left;
+                            margin: auto;">
+
+                            <label for="totalkarton"  class="form-label font-weight-bold text-primary" >Total Karton</label>
+                            <input type="text" class="form-control" id="totalkarton"readonly>
+
+                         </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3 mb-1">
+                        <div class="justify-content-start">
+                            <button onclick="exeListPalet()" type="button" id="simpanButton" class="btn btn-primary btn-m"></i>Selesai</button>
+                        </div>
+                        <div class="justify-content-start">
+                            <button onclick="exeScan()" type="button" id="simpanButton" class="btn btn-success btn-m"></i>Karton Lain</button>
+                        </div>
+                    </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive-md">
+                  <table class="table" id="listBarang">
+                      <thead>
+                          <tr>
+                          <th style="vertical-align:middle">Nama Barang</th>
+                          <th >Total Karton</th>
+                          <th >Palet</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                      </tbody>
+                  </table>
+          </div>
+           
+           
+      <div>
+        
+      </div>
+        </div>
+      </body>
+        
+</html>

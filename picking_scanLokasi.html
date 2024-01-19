@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Picking</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <link
+      rel="stylesheet"
+      href="./asset/@sweetalert2/theme-material-ui/material-ui.css"
+    />
+    <script src="./asset/sweetalert2/dist/sweetalert2.all.js"></script>
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      var scan = "";
+      var jmlItem = GetURLParameter("jmlItem");
+      var index = 0;
+      var so = GetURLParameter("so");
+      var jumlahorder = GetURLParameter("jumlahorder");
+      var stokkarton = "";
+      document.addEventListener("deviceready", onDeviceReady, false);
+
+      function onDeviceReady() {}
+      //----------------------------------------------------------------------------------------------------------------------------------------
+      function exeScan() {
+        scan = document.getElementById("input1").value;
+        if (scan == "") {
+          Swal.fire({
+            title: "Oops...",
+            text: "Scan Kosong",
+            icon: "warning",
+            confirmButtonText: "Back",
+          });
+          clearBarcode();
+        } else {
+          console.log(scan, "==", lokasi);
+          if (scan == lokasi) {
+            nextScanBarcode();
+            return;
+          } else {
+            Swal.fire({
+              title: "Oops...",
+              text: "Lokasi Salah",
+              icon: "warning",
+              confirmButtonText: "Back",
+            });
+            clearBarcode();
+          }
+        }
+      }
+
+      const callCC = () => {
+        var url =
+          UrlApi +
+          "/nug_api/callCC?lokasi=" +
+          lokasi +
+          "&kodebarang=" +
+          kodebarang +
+          "&noso=" +
+          so;
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              alert("Terjadi kesalahan Dalam Respons.");
+              throw new Error("Terjadi kesalahan dalam respons.");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            nextScanBarcode();
+          })
+          .catch((error) => {
+            alert("Request Gagal");
+          });
+      };
+
+      const nextScanBarcode = () => {
+        location.href =
+          "picking_scanKodeBarang.html?namalogin=" +
+          user +
+          "&so=" +
+          so +
+          "&jumlahorder=" +
+          jumlahorder +
+          "&jmlItem=" +
+          jmlItem +
+          "&id=" +
+          iddsalesorder +
+          "&jumlahbarang=" +
+          jumlahbarang +
+          "&level=" +
+          level +
+          "&kodebarang=" +
+          kodebarang +
+          "&lokasi=" +
+          lokasi +
+          "&stokkarton=" +
+          stokkarton;
+      };
+
+      const callReffiler = () => {
+        var ceklok = lokasi.substring(0, 1);
+        if (ceklok == 9 || ceklok == 8) {
+          putPicking();
+          return;
+        }
+        var url =
+          UrlApi +
+          "/nug_api/confirmStok?lokasi=" +
+          lokasi +
+          "&kodebarang=" +
+          kodebarang +
+          "&noso=" +
+          so +
+          "&iddsales=" +
+          iddsalesorder;
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              alert("Terjadi kesalahan Dalam Respons.");
+              throw new Error("Terjadi kesalahan dalam respons.");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            location.href =
+              "picking_scanLokasi.html?namalogin=" +
+              user +
+              "&so=" +
+              so +
+              "&jumlahorder=" +
+              jumlahorder +
+              "&jmlItem=" +
+              jmlItem +
+              "&level=" +
+              level;
+          })
+          .catch((error) => {
+            alert("Request Gagal");
+          });
+      };
+
+      function putPicking() {
+        jumlahscan = 0;
+        jmlperkarton = 0;
+
+        var url =
+          UrlApi +
+          "/nug_api/pickingResi?noso=" +
+          so +
+          "&index=" +
+          index +
+          "&jumlahScan=" +
+          jumlahscan +
+          "&picker=" +
+          user +
+          "&lokasi=" +
+          lokasi +
+          "&kodebar=" +
+          kodebarang +
+          "&jmlScanKarton=" +
+          jmlperkarton +
+          "&jmlItem=" +
+          jmlItem +
+          "&jumlahOrder=" +
+          jumlahorder +
+          "&iddsalesorder=" +
+          iddsalesorder;
+
+        console.log(url);
+
+        fetch(url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              alert("Terjadi kesalahan Dalam Respons.");
+              throw new Error("Terjadi kesalahan dalam respons.");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            // Sukses, data dari server ada di sini
+            console.log("Sukses");
+            if (jmlItem == 0) {
+              alert("SO Selesai, Terima Kasih");
+              location.href =
+                "picking_scanSO.html?namalogin=" + user + "&level=" + level;
+              return;
+            }
+            getNextLocation();
+          })
+          .catch((error) => {
+            alert("Request Gagal. (PUT:/nug_api/getDSOScan)");
+          });
+      }
+
+      function getNextLocation() {
+        jumlahorder++;
+        jmlItem--;
+        location.href =
+          "picking_scanLokasi.html?namalogin=" +
+          user +
+          "&so=" +
+          so +
+          "&jumlahorder=" +
+          jumlahorder +
+          "&jmlItem=" +
+          jmlItem +
+          "&level=" +
+          level;
+      }
+
+      const unitTesting = () => {
+        if (stok == 0) {
+          nextScanBarcode();
+          return;
+        }
+        document.getElementById("input1").value = lokasi;
+        exeScan();
+      };
+
+      function clearBarcode() {
+        //console.log("CLEAR BARCODE");
+        document.getElementById("input1").value = "";
+      }
+      function exeDashboard() {
+        if (confirm("Confirm")) {
+          location.href =
+            "dashboard.html?namalogin=" + user + "&level=" + level;
+        } else {
+          return false;
+        }
+      }
+      function exeHome() {
+        if (confirm("Confirm")) {
+          location.href =
+            "picking_scanSO.html?namalogin=" + user + "&level=" + level;
+        } else {
+          return false;
+        }
+      }
+      function exeBack() {
+        if (confirm("Confirm")) {
+          location.href =
+            "picking_scanSO.html?namalogin=" + user + "&level=" + level;
+        } else {
+          return false;
+        }
+      }
+      function exeRefresh() {
+        //location.href="scan_barang.html?namalogin="+user+"&level="+level
+        //showBarang();
+        //savePicking();
+        location.reload();
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 14px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <a onclick="exeBack()"
+          ><i
+            class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+            style="font-size: 25px"
+          ></i
+        ></a>
+        <div>
+          <h5 style="line-height: 20px; color: white">PICKING</h5>
+          <h6 style="line-height: 0px; color: white">Scan Lokasi Picking</h6>
+        </div>
+      </div>
+      <div>
+        <a class="" data-bs-toggle="dropdown" href="">
+          <i
+            class="fas fa-bars fa-sm fa-fw mr-3 text-white"
+            style="font-size: 28px"
+          ></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="exeDashboard()">
+              <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>Dashboard
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeHome()">
+              <i
+                class="fas fas fa-clipboard-list fa-sm fa-fw m-2 text-black"
+              ></i
+              >Home
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeRefresh()">
+              <i class="fas fa-sync fa-sm fa-fw m-2 text-black"></i>Refresh
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+    </div>
+    <div>
+      <div class="table-responsive-md">
+        <table class="table" id="listSO">
+          <thead>
+            <tr></tr>
+          </thead>
+          <tbody id="bodyListSO"></tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div
+        style="
+          box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+          border-radius: 8px;
+        "
+      >
+        <div class="card-body" style="padding: 5px 12px 0px 12px">
+          <div class="table-responsive-md">
+            <table class="table" id="listBarang">
+              <thead>
+                <tr></tr>
+              </thead>
+              <tbody id="bodyListBarang"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive-md mt-3">
+        <table class="table" id="tableButton">
+          <thead></thead>
+          <tbody id="bodyTableButton"></tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+  <script>
+    var kodebarang = "",
+      jumlahbarang = 0,
+      iddsalesorder = "",
+      lokasi = "";
+    let xhr = new XMLHttpRequest();
+    xhr.open(
+      "GET",
+      UrlApi + "/nug_api/pickingResi?noso=" + so + "&index=" + index
+    );
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    let data = "noso=" + so + "&index=" + index;
+    //console.log(data)
+    xhr.send(data);
+    xhr.onload = function () {
+      console.log(this.responseText);
+      var obj = JSON.parse(this.responseText),
+        err = obj.error,
+        msg = obj.msg;
+      if (err == "true") {
+        alert(msg);
+        return;
+      }
+      //console.log(obj.data.rows)
+      var isiData = obj.data.rows;
+      (namabarang = isiData[0]["namabarang"]),
+        (kodebarang = isiData[0]["kodebarang"]),
+        (lokasi = isiData[0]["lokasi"]),
+        (jumlahbarang = isiData[0]["jumlahbarang"]),
+        (iddsalesorder = isiData[0]["iddsalesorder"]),
+        (stok = isiData[0]["stok"]);
+      stokkarton = isiData[0]["stokkarton"];
+      console.log(lokasi);
+
+      const l = document.querySelector("#bodyListSO"),
+        t = document.querySelector("#bodyTableButton"),
+        b = document.querySelector("#bodyListBarang");
+      i = document.querySelector("#bodyListStok");
+      (l.innerHTML = ""), (t.innerHTML = ""), (b.innerHTML = "");
+      // SO
+      var row = document.createElement("tr");
+      var cell1 = document.createElement("div");
+      cell1.classList.add("styleSO");
+      cell1.innerHTML = "SO : " + so;
+      row.appendChild(cell1);
+      l.appendChild(row);
+
+      // List
+      var row = document.createElement("tr"),
+        cell2 = document.createElement("div"),
+        cell3 = document.createElement("div"),
+        div1 = document.createElement("div"),
+        cell14 = document.createElement("p"),
+        cellkarton = document.createElement("p"),
+        textLokasi = "LOKASI TIDAK DITEMUKAN [!]";
+
+      cell2.classList.add("styleNamabrg");
+      cell3.classList.add("styleOrder");
+      div1.classList.add("stylediv1");
+      cell14.classList.add("stylecellkarton");
+      cellkarton.classList.add("stylecellkarton");
+
+      cell2.innerHTML = namabarang;
+      cell3.innerHTML = "Ordered Sisa : " + "-" + " Item";
+      cell14.innerHTML = "Stok Lepasan : " + stok;
+      cellkarton.innerHTML = "Stok Karton : " + stokkarton;
+
+      row.appendChild(cell2);
+      row.appendChild(cell3);
+      if (lokasi == "") {
+        var cell4 = document.createElement("div");
+        cell4.classList.add("styleLokasi");
+        cell4.innerHTML = textLokasi;
+        row.appendChild(cell4);
+      } else {
+        // lokasi
+        const lok = lokasi.split(".");
+        var cell4 = document.createElement("p5");
+        cell4.classList.add("styleGetlokasi1");
+        cell4.innerHTML = lok[0] + ". ";
+        row.appendChild(cell4);
+
+        var cell5 = document.createElement("p5");
+        cell5.classList.add("styleGetlokasi2");
+        cell5.innerHTML = lok[1] + ". ";
+        row.appendChild(cell5);
+
+        var cell6 = document.createElement("p5");
+        cell6.classList.add("styleGetlokasi3");
+        cell6.innerHTML = lok[2] + ". ";
+        row.appendChild(cell6);
+
+        var cell7 = document.createElement("p5");
+        cell7.classList.add("styleGetlokasi4");
+        cell7.innerHTML = lok[3] + ". ";
+        row.appendChild(cell7);
+
+        var cell8 = document.createElement("p5");
+        cell8.classList.add("styleGetlokasi5");
+        cell8.innerHTML = lok[4];
+        row.appendChild(cell8);
+
+        var div = document.createElement("div");
+        row.appendChild(div);
+
+        //detail lokasi
+        var cell9 = document.createElement("p5");
+        cell9.classList.add("styleListlokasi1");
+        cell9.innerHTML = "LT : " + lok[0];
+        row.appendChild(cell9);
+
+        var cell10 = document.createElement("p5");
+        cell10.classList.add("styleListlokasi2");
+        cell10.innerHTML = " | RAK : " + lok[1];
+        row.appendChild(cell10);
+
+        var cell11 = document.createElement("p5");
+        cell11.classList.add("styleListlokasi3");
+        cell11.innerHTML = " | KOL : " + lok[2];
+        row.appendChild(cell11);
+
+        var cell12 = document.createElement("p5");
+        cell12.classList.add("styleListlokasi4");
+        cell12.innerHTML = " | LVL : " + lok[3];
+        row.appendChild(cell12);
+
+        var cell13 = document.createElement("p5");
+        cell13.classList.add("styleListlokasi5");
+        cell13.innerHTML = " | BIN : " + lok[4];
+        row.appendChild(cell13);
+      }
+      div1.appendChild(cell14),
+        div1.appendChild(cellkarton),
+        row.appendChild(div1),
+        b.appendChild(row);
+
+      // Button
+      var row = document.createElement("tr"),
+        cell1 = document.createElement("td"),
+        cell2 = document.createElement("div"),
+        cell3 = document.createElement("td"),
+        cell4 = document.createElement("td"),
+        icon = document.createElement("div"),
+        col = document.createElement("div");
+      col.classList.add("styleButton31");
+      cell3.classList.add("styleButtonNew");
+      cell4.classList.add("styleButtonNew");
+      cell1.classList.add("styleButtonNew");
+      icon.classList.add("imageIcon");
+      icon.innerHTML =
+        "<img src='img/zone-picking.png' style='height: 200px;margin-bottom: 10px;'>";
+      row.appendChild(icon);
+      if (stok <= 0) {
+        cell1.innerHTML =
+          "<button onclick='putPicking()' type='button' class='btn btn-danger' >STOK HABIS</button>";
+        col.appendChild(cell1);
+
+        cell3.innerHTML =
+          "<button onclick='callCC()' type='button' class='btn btn-primary styleButton31' color:lightblue'>STOK ADA</button>";
+        col.appendChild(cell3);
+
+        cell4.innerHTML =
+          "<button onclick='callReffiler()' type='button' class='btn btn-success styleButton31' color:yellow'>REFIL STOK</button>";
+        col.appendChild(cell4);
+        row.appendChild(col);
+      } else {
+        cell2.classList.add("styleInput");
+        cell2.innerHTML =
+          "<input onchange='exeScan()'  style='text-align: center' type='tel' class='form-control tengah' id='input1' placeholder='Enter Lokasi Here' name='input1' autofocus>";
+        row.appendChild(cell2);
+      }
+      t.appendChild(row);
+
+      //Unit Testing
+      //unitTesting();
+    };
+  </script>
+</html>

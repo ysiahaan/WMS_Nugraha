@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Inbound</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="js/jquery.autocomplete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      document.addEventListener("deviceready", onDeviceReady, false);
+      var isiData = {};
+      var getFullDict = [];
+      var getSJFullDict = [];
+      var getDataDictSJ = [];
+      var nosj = "";
+      var supp = "";
+      var tgl1 = "";
+      var tgl2 = "";
+      var jmlPcs = "";
+      var satuan = "";
+      var jmlKarton = "";
+      var autoSupplier = "";
+
+      function onDeviceReady() {
+        date = new Date();
+        var formattedDate =
+          date.getFullYear() +
+          "-" +
+          (date.getMonth() + 1) +
+          "-" +
+          date.getDate(); //+ " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+        formattedDate = formattedDate.replace(/(?<!\d)(?=\d(\D|$))/g, "0");
+
+        document.getElementById("tglawal").value = formattedDate;
+        document.getElementById("tglakhir").value = formattedDate;
+        getDate();
+      }
+
+      function getValueTotal() {
+        var input = document.getElementById("txtJmlKarton").value;
+        jmlKarton = document.getElementById("jmlKarton").value;
+        jmlPcs = document.getElementById("jmlPcs").value;
+        satuan = document.getElementById("txtSatuan").value;
+        if (isNaN(jmlKarton)) {
+          jmlKarton = 0;
+        }
+        if (jmlPcs == "") {
+          jmlPcs = 0;
+        }
+        jmlKarton = jmlKarton * input;
+        jml = parseInt(jmlKarton) + parseInt(jmlPcs);
+        if (isNaN(jml)) {
+          jml = 0;
+        }
+        document.getElementById("jmlTotal").value = jml + " " + satuan;
+      }
+
+      function getDate() {
+        tgl1 = document.getElementById("tglawal").value;
+        tgl2 = document.getElementById("tglakhir").value;
+        var day = "";
+        var mouth = "";
+        var year = "";
+        var date = new Date(tgl1);
+        for (i = 0; i <= 1; i++) {
+          day = date.getDate();
+          month = date.getMonth() + 1;
+          year = date.getFullYear();
+          if (month < 10) {
+            month = "0" + month;
+          }
+          if (day < 10) {
+            day = "0" + day;
+          }
+          if (i == 0) {
+            tgl1 = year + "-" + month + "-" + day;
+          }
+          date = new Date(tgl2);
+        }
+        month = date.getMonth() + 1;
+        if (month < 10) {
+          month = "0" + month;
+        }
+        tgl2 = year + "-" + month + "-" + day;
+        getFull();
+        //getDataFull();
+      }
+
+      function getDataFull() {
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "GET",
+          UrlApi + "/nug_api/getFull?tgl1=" + tgl1 + "&tgl2=" + tgl2
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        xhr.send(data);
+        xhr.onload = function () {
+          //console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            alert(msg);
+            return;
+          }
+          var getData = obj.data.rows;
+          /*for (i = 0; i < getData.length; i++) {
+            let tempDict = {
+              sj: getData[i]["srtjalan"],
+              fl: getData[i]["full"],
+            };
+            getFullDict.push(tempDict);
+          }*/
+          //console.log(getFullDict);
+          getFull();
+        };
+      }
+
+      function editDataBarang() {
+        var jmlTotBaru = document.getElementById("jmlTotal").value;
+        var namabrgBaru = document.getElementById("namabarang").value;
+        var kodebarBaru = document.getElementById("txtKodeBar").value;
+        var satuanBaru = document.getElementById("txtSatuan").value;
+        var idpodet = document.getElementById("idpodet").value;
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "PUT",
+          UrlApi +
+            "/nug_api/receivePODet?idpodet=" +
+            idpodet +
+            "&total=" +
+            jmlTotBaru +
+            "&nama=" +
+            namabrgBaru +
+            "&kode=" +
+            kodebarBaru +
+            "&satuan=" +
+            satuanBaru
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "idpodet=" + idpodet;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            alert("Tidak Terupdate");
+            return;
+          }
+          alert(msg);
+          showBarang();
+        };
+      }
+
+      function getFull() {
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "GET",
+          UrlApi +
+            "/nug_api/listSuratJalanByDate?tgl1=" +
+            tgl1 +
+            "&tgl2=" +
+            tgl2
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        xhr.send(data);
+        xhr.onload = function () {
+          var obj = JSON.parse(this.responseText);
+          var err = obj.error;
+          var msg = obj.msg;
+          if (err == "true") {
+            alert(msg);
+            return;
+          }
+          console.log(obj);
+          var getData = obj.data.rows;
+
+          // fungsi Array.map()
+          getDataDictSJ = getData.map((value) => {
+            return {
+              sj: value.srtjalan,
+              ns: value.namasupp,
+              sup: value.supplier,
+              full: value.full,
+              cek: value.cekfull,
+            }; // ngisi data per SJ
+          });
+
+          // fungsi Array.filter()
+          if (getDataDictSJ?.length > 0)
+            // ngisi data jika ada barang yang belum ter isi
+            getSJFullDict = getDataDictSJ.filter((value) => value?.full === 0);
+
+          // jika data sudah ada maka akan memanggil fungsi showBarang() -> tidak memakan resource
+          if (getDataDictSJ.length > 0) showBarang();
+        };
+      }
+
+      function clearField() {
+        document.getElementById("jmlPcs").value = "";
+        document.getElementById("jmlKarton").value = "";
+        document.getElementById("jmlTotal").value = "";
+        document.getElementById("namabarang").value = "";
+      }
+
+      function hapusBarang(idx) {
+        var ket1 = getDataDictSJ[idx]["sj"];
+        var supp = getDataDictSJ[idx]["sup"];
+        console.log(idx);
+        console.log(ket1);
+        console.log(supp);
+        //return;
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "DELETE",
+          UrlApi + "/nug_api/listSuratJalan?sj=" + ket1 + "&supp=" + supp
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        var c = 0;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          var obj = JSON.parse(this.responseText);
+          var msg = obj.msg;
+          alert(msg);
+          //showBarang();
+        };
+      }
+
+      function hapusItemBarang(idx) {
+        var id = isiData[idx]["idpodet"];
+        let xhr = new XMLHttpRequest();
+        xhr.open("DELETE", UrlApi + "/nug_api/receivePODet?idpodet=" + id);
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        var c = 0;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          var obj = JSON.parse(this.responseText);
+          var msg = obj.msg;
+          alert(msg);
+          //showBarang();
+        };
+      }
+
+      function showBarang() {
+        var c = 0;
+        var index = 0;
+        var theTabel = document.getElementById("listBarang");
+        theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+        var tbody = document.createElement("tbody");
+        theTabel.appendChild(tbody);
+
+        console.log(getDataDictSJ); //data per supplier
+        console.log(getSJFullDict); //data barang yang full == 0
+        //console.log(getFullDict); //data barang dari supplier
+
+        getDataDictSJ.forEach((item) => {
+          c++;
+          var row = document.createElement("tr");
+          var cell1 = document.createElement("td");
+          var cell2 = document.createElement("td");
+          var cell3 = document.createElement("td");
+          var cell4 = document.createElement("td");
+          var nomor = document.createElement("td");
+          var hapus = document.createElement("td");
+          cell1.classList.add("stybuttonList");
+          var srtjalan = item.sj;
+          var supp = item.sup;
+          var namasupp = item.ns;
+          var cek = item.cek;
+
+          // Array.find()
+          var srtjalanDict = getSJFullDict?.find(
+            (val) => val?.sj == item.sj
+          )?.sj;
+          console.log(srtjalan, "===", srtjalanDict);
+
+          nomor.innerHTML = c;
+          cell2.innerHTML = namasupp;
+          cell1.innerHTML = srtjalan;
+          cell3.innerHTML =
+            "<button class='stybuttonList' onclick='showBarangModel(" +
+            index +
+            ")' data-bs-toggle='modal' data-bs-target='#myModal' style='color: blue;'>Belum Komplit</button>";
+          cell4.innerHTML =
+            "<button class='stybuttonList' onclick='showBarangModel(" +
+            index +
+            ")' data-bs-toggle='modal' data-bs-target='#myModal' style='color: blue;'>Komplit</button>";
+          hapus.innerHTML =
+            "<a onclick='hapusBarang(" +
+            index +
+            ")' style='font-size:28px;'><i class='far fa-trash-alt' style='color:red'></i></a>";
+          row.appendChild(nomor);
+          row.appendChild(cell2);
+          row.appendChild(cell1);
+          if (cek == 0) {
+            row.appendChild(cell4);
+          } else {
+            row.appendChild(cell3);
+          }
+          row.appendChild(hapus);
+          tbody.appendChild(row);
+          index++;
+        });
+      }
+
+      function editBarang(idx, idxsj) {
+        clearField();
+        var id = isiData[idx]["idpodet"];
+        console.log(id);
+        var nama = isiData[idx]["namalengkap"];
+        var jml = isiData[idx]["jumlahbarang"];
+        var kodebrg = isiData[idx]["kodebarang"];
+        var sj = getDataDictSJ[idxsj]["sj"];
+        var autoSupplier = getDataDictSJ[idxsj]["sup"];
+
+        document.getElementById("idpodet").value = id;
+        document.getElementById("namaBrgLama").value = nama;
+        document.getElementById("jmlBrgLama").value = jml;
+      }
+
+      function showBarangModel(id) {
+        var idsj = id;
+        var id = getDataDictSJ[id]["sj"];
+
+        console.log(id);
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", UrlApi + "/nug_api/listAllSuratJalan?ket1=" + id);
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        var c = 0;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          //console.log(obj.data.rows)
+          var obj = JSON.parse(this.responseText);
+          //console.log(obj.data.rows)
+          isiData = obj.data.rows;
+          var theTabel = document.getElementById("listBarangModel");
+          theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+          var tbody = document.createElement("tbody");
+          theTabel.appendChild(tbody);
+
+          for (var i = 0; i < isiData.length; i++) {
+            var row = document.createElement("tr");
+            var cell1 = document.createElement("td");
+            var cell2 = document.createElement("td");
+            var cell3 = document.createElement("td");
+            var cell4 = document.createElement("td");
+            var cell5 = document.createElement("td");
+            var nomor = document.createElement("td");
+            var edit = document.createElement("td");
+            var hapus = document.createElement("td");
+            cell1.classList.add("stybuttonList");
+            c++;
+            var satuan = isiData[i]["satuan"];
+            nomor.innerHTML = c;
+            cell1.innerHTML = isiData[i]["kodebarang"];
+            cell2.innerHTML = isiData[i]["namalengkap"];
+            cell3.innerHTML = isiData[i]["jumlahbarang"] + " " + satuan;
+            cell4.innerHTML = isiData[i]["ket2"] + " " + satuan;
+            cell5.innerHTML = isiData[i]["sisa"] + " " + satuan;
+            edit.innerHTML =
+              "<button class='stybuttonList' onclick='editBarang(" +
+              i +
+              "," +
+              idsj +
+              ")' data-bs-toggle='modal' data-bs-target='#myModalEdit' style='font-size:28px;'><i class='fas fa-edit' style='color:blue'></i></button>";
+            hapus.innerHTML =
+              "<a onclick='hapusItemBarang(" +
+              i +
+              ")'  data-bs-dismiss='modal' style='font-size:28px;'><i class='far fa-trash-alt' style='color:red'></i></a>";
+            row.appendChild(nomor);
+            row.appendChild(cell1);
+            row.appendChild(cell2);
+            row.appendChild(cell3);
+            row.appendChild(cell4);
+            row.appendChild(cell5);
+            row.appendChild(edit);
+            row.appendChild(hapus);
+            tbody.appendChild(row);
+          }
+        };
+      }
+
+      function exeDashboard() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeHome() {
+        location.href =
+          "penerimaan_home.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeBack() {
+        location.href =
+          "penerimaan_home.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeRiwayat() {
+        location.href =
+          "penerimaan_riwayat.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeRefresh() {
+        //location.href="scan_barang.html?namalogin="+user+"&level="+level
+        document.location.reload(true);
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 14px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <a onclick="exeBack()"
+          ><i
+            class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+            style="font-size: 25px"
+          ></i
+        ></a>
+        <div>
+          <h5 style="line-height: 20px; color: white">
+            Histori Penerimaan Barang
+          </h5>
+          <h6 style="line-height: 0px; color: white">Inti Guna Nusantara</h6>
+        </div>
+      </div>
+      <div>
+        <a class="" data-bs-toggle="dropdown" href="">
+          <i
+            class="fas fa-bars fa-sm fa-fw mr-3 text-white"
+            style="font-size: 28px"
+          ></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="exeDashboard()">
+              <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>Dashboard
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" onclick="exeBack()">
+              <i
+                class="fas fas fa-clipboard-list fa-sm fa-fw m-2 text-black"
+              ></i
+              >Home
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item active" onclick="exeRiwayat()">
+              <i
+                class="fas fas fa-clipboard-list fa-sm fa-fw m-2 text-black"
+              ></i
+              >Riwayat
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- =================== =================== ================= ================ TABEL -->
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 49% 49%;
+        gap: 10px;
+        padding: 0px 6px 0px 6px;
+        text-align: left;
+        margin: auto;
+      "
+    >
+      <label for="" class="form-label font-weight-bold text-primary mt-2 ml-1"
+        >Tanggal Mulai</label
+      >
+      <label for="" class="form-label font-weight-bold text-primary mt-2 ml-1"
+        >Tanggal AKhir</label
+      >
+    </div>
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 49% 49%;
+        gap: 10px;
+        padding: 0px 6px 0px 6px;
+        text-align: left;
+        margin: auto;
+      "
+    >
+      <input type="date" class="form-control" id="tglawal" name="tglawal" />
+      <input
+        type="date"
+        class="form-control"
+        id="tglakhir"
+        onkeyup="getDate()"
+      />
+    </div>
+
+    <div>
+      <div
+        style="
+          box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+          border-radius: 8px;
+        "
+      >
+        <div>
+          <div>
+            <label
+              for=""
+              class="form-label font-weight-bold text-primary"
+              style="padding: 20px 0px 0px 20px; font-size: 24px"
+              >List Inbound</label
+            >
+          </div>
+          <div class="card-body">
+            <div class="table-responsive-md">
+              <table class="table" id="listBarang">
+                <thead>
+                  <tr>
+                    <th style="vertical-align: middle">No</th>
+                    <th style="vertical-align: middle">Supplier</th>
+                    <th style="vertical-align: middle">Surat Jalan</th>
+                    <th style="vertical-align: middle">Status</th>
+                    <th style="vertical-align: middle">Action</th>
+                    <!-- <th style="vertical-align:middle">Terlokasi</th> -->
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div></div>
+    </div>
+    <div class="modal" id="myModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Data Penerimaan Barang</h4>
+          </div>
+
+          <div class="card-body">
+            <div class="table-responsive-md">
+              <table class="table" id="listBarangModel">
+                <thead>
+                  <tr>
+                    <th style="vertical-align: middle">No</th>
+                    <th style="vertical-align: middle">Kode</th>
+                    <th style="vertical-align: middle">Nama Barang</th>
+                    <th style="vertical-align: middle">Order</th>
+                    <th style="vertical-align: middle">Masuk</th>
+                    <th style="vertical-align: middle">Sisa</th>
+                    <th
+                      style="vertical-align: middle; text-align: center"
+                      colspan="2"
+                    >
+                      Action
+                    </th>
+                    <th style="vertical-align: middle" colspan="2"></th>
+                    <!-- <th style="vertical-align:middle">Terlokasi</th> -->
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-danger"
+              data-bs-dismiss="modal"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal" id="myModalEdit">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Edit Barang</h4>
+          </div>
+
+          <div class="card-body">
+            <div class="table-responsive-md">
+              <table class="table" id="listBarangModel">
+                <tbody>
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: 100%;
+                      gap: 10px;
+                      text-align: left;
+                      margin: auto;
+                    "
+                  >
+                    <div>
+                      <label
+                        for="kodeBrg"
+                        class="form-label font-weight-bold text-primary mt-2 ml-3"
+                        >Barang Lama</label
+                      >
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: 70% 27%;
+                          gap: 10px;
+                          padding: 0px 6px 10px 6px;
+                          text-align: left;
+                          margin: auto;
+                        "
+                      >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="namaBrgLama"
+                          placeholder=""
+                          name="namaBrgLama"
+                          readonly
+                        />
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="jmlBrgLama"
+                          placeholder=""
+                          name="jmlBrgLama"
+                          readonly
+                        />
+                      </div>
+
+                      <label
+                        for="kodeBrg"
+                        class="form-label font-weight-bold text-primary mt-2 ml-3"
+                        >Barang Baru</label
+                      >
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: 100%;
+                          gap: 10px;
+                          padding: 0px 6px 10px 6px;
+                          text-align: left;
+                          margin: auto;
+                        "
+                      >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="namabarang"
+                          placeholder="Search Barang"
+                          name="namabarang"
+                        />
+                      </div>
+
+                      <label
+                        for="kodeBrg"
+                        class="form-label font-weight-bold text-primary mt-2 ml-3"
+                        >Jumlah</label
+                      >
+                      <div
+                        style="
+                          display: grid;
+                          grid-template-columns: 49% 49%;
+                          gap: 10px;
+                          padding: 0px 6px 0px 6px;
+                          text-align: left;
+                          margin: auto;
+                        "
+                      >
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="txtKodeBar"
+                          name="txtKodeBar"
+                          hidden
+                        />
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="txtSatuan"
+                          name="txtSatuan"
+                          hidden
+                        />
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="txtHarga"
+                          name="txtHarga"
+                          hidden
+                        />
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="txtJmlKarton"
+                          name="txtJmlKarton"
+                          hidden
+                        />
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="idbarang"
+                          name="idbarang"
+                          hidden
+                        />
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="kodebrgkarton"
+                          name="kodebrgkarton"
+                          hidden
+                        />
+
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="idpodet"
+                          name="idpodet"
+                          hidden
+                        />
+
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="jmlKarton"
+                          placeholder="Jml Karton"
+                          name="jmlKarton"
+                          onkeyup="getValueTotal()"
+                        />
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="jmlPcs"
+                          placeholder="Jml Lepasan"
+                          name="jmlPcs"
+                          onkeyup="getValueTotal()"
+                        />
+                      </div>
+                      <div
+                        class="justify-content-end"
+                        style="
+                          display: grid;
+                          grid-template-columns: 15% 50%;
+                          padding: 12px 6px 0px 0px;
+                          text-align: left;
+                          margin: auto;
+                        "
+                      >
+                        <label for="valueallitem" class="m-1">TOTAL</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="jmlTotal"
+                          name="jmlTotal"
+                          readonly
+                        />
+                      </div>
+
+                      <div
+                        class="justify-content-end"
+                        style="
+                          display: grid;
+                          grid-template-columns: 30% 30%;
+                          padding: 20px 6px 20px 0px;
+                          gap: 10px;
+                          text-align: center;
+                          margin: auto;
+                        "
+                      >
+                        <button
+                          onclick="showBarang()"
+                          type="button"
+                          id="masukTabelBut"
+                          class="btn btn-danger btn-m"
+                          data-bs-toggle="modal"
+                          data-bs-target="#myModal"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          onclick="editDataBarang()"
+                          type="button"
+                          id="masukTabelBut"
+                          class="btn btn-success btn-m"
+                          data-bs-dismiss="modal"
+                        >
+                          Ubah
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    $(document).ready(function () {
+      // let cariCus = document.getElementById("namaCus").value;
+      $("#namabarang").autocomplete({
+        serviceUrl: UrlApi + "/nug_api/barangAutoComBySup?supp=" + autoSupplier, // Kode php untuk prosesing data
+        //serviceUrl: UrlApi + "/nug_api/barangAutoCom",   // Kode php untuk prosesing data
+        dataType: "JSON", // Tipe data JSON
+        onSelect: function (suggestion) {
+          $("#txtKodeBar").val("" + suggestion.data);
+          $("#namabarang").val("" + suggestion.value);
+          $("#txtHarga").val("" + suggestion.harga);
+          $("#txtSatuan").val("" + suggestion.satuan);
+          $("#txtJmlKarton").val("" + suggestion.jmlKarton);
+          $("#idbarang").val("" + suggestion.idbarang);
+          $("#kodebrgkarton").val("" + suggestion.kodebrgkarton);
+          //receivePODet();
+          //cekBarang();
+        },
+      });
+    });
+  </script>
+</html>

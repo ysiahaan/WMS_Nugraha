@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>ADMIN</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <!-- <script src="asset/bootstrap-select.min.js"></script> -->
+    <script src="asset/flatpickr.js"></script>
+    <!-- <script src="asset/tempus-dominus.js"></script> -->
+    <script src="js/jquery.autocomplete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      var dictDataDevisi = [];
+      var dictDataLvl = [];
+      var lvlOP = GetURLParameter("lvlOP");
+      document.addEventListener("deviceready", onDeviceReady, false);
+
+      function onDeviceReady() {
+        getDevisi();
+      }
+      //----------------------------------------------------------------------------------------------------------------------------------------
+
+      function getDevisi() {
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", UrlApi + "/nug_api/getMenu");
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var getData = obj.data.rows;
+
+          dictDataDevisi = getData.map((value) => {
+            return {
+              level: value.id,
+              devisi: value.namamenu,
+            }; // ngisi data
+          });
+          getLevel();
+        };
+      }
+
+      function getLevel() {
+        let xhr = new XMLHttpRequest();
+        xhr.open("GET", UrlApi + "/nug_api/getLvlOpe?level=" + lvlOP);
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var getData = obj.data.rows;
+
+          dictDataLvl = getData.map((value) => {
+            return {
+              level: value.lvloperator,
+              picking: value.picking,
+              packing: value.packing,
+              reffiler: value.reffiler,
+              stok: value.stok,
+              pindahLok: value.pindahlok,
+              onlineShop: value.onlineshop,
+              purchasing: value.purchasing,
+              inbound: value.inbound,
+              delivery: value.delivery,
+              penerimaan: value.penerimaan,
+              admin: value.admin,
+            }; // ngisi semua data
+          });
+          showBarang();
+        };
+      }
+
+      function hapus(idx) {
+        console.log("0");
+        var tabel = dictDataDevisi[idx]["devisi"];
+        console.log(level);
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "DELETE",
+          UrlApi + "/nug_api/getLvlOpe?lvl=" + lvlOP + "&tbl=" + tabel
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          alert("Menu Di Hilangkan [!]");
+          console.log(this.responseText);
+          getLevel();
+        };
+      }
+
+      function add(idx) {
+        console.log("1");
+        var tabel = dictDataDevisi[idx]["devisi"];
+        console.log(level);
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "PUT",
+          UrlApi + "/nug_api/getLvlOpe?lvl=" + lvlOP + "&tbl=" + tabel
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "";
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          alert("Menu Di Tambahkan [!]");
+          console.log(this.responseText);
+          getLevel();
+        };
+      }
+
+      function showBarang() {
+        var theTabel = document.getElementById("listBarang");
+        theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+        var tbody = document.createElement("tbody");
+        theTabel.appendChild(tbody);
+
+        dictDataDevisi.forEach((item, index) => {
+          var row = document.createElement("tr");
+          var cell1 = document.createElement("td");
+          var cell2 = document.createElement("td");
+          var cell3 = document.createElement("td");
+          var cell4 = document.createElement("td");
+          var cell5 = document.createElement("td");
+
+          // ======== STYLE
+          //cell1.classList.add("style");
+
+          // ======== Show Data
+          cell1.innerHTML =
+            "<button class='stybuttonList' style='color: black; font-size: 16px'>" +
+            dictDataDevisi[index]["devisi"] +
+            "</button>";
+
+          cell3.innerHTML =
+            "<div class='form-check form-switch'>" +
+            "<input class='form-check-input' onchange='hapus(" +
+            index +
+            ")' type='checkbox' id='mySwitch' name='darkmode' value='1' checked></div>";
+          cell4.innerHTML =
+            "<div class='form-check form-switch'>" +
+            "<input class='form-check-input' onchange='hapus(" +
+            index +
+            ")' type='checkbox' id='mySwitch' name='darkmode' value='1' checked disabled></div>";
+          cell5.innerHTML =
+            "<div class='form-check form-switch'>" +
+            "<input class='form-check-input' onchange='hapus(" +
+            index +
+            ")' type='checkbox' id='mySwitch' name='darkmode' value='1' disabled></div>";
+
+          cell2.innerHTML =
+            "<div class='form-check form-switch'>" +
+            "<input class='form-check-input' onchange='add(" +
+            index +
+            ")' type='checkbox' id='mySwitch' name='darkmode' value='0'></div>";
+
+          if (dictDataDevisi[index]["level"] == 11) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["admin"] == 1) {
+              row.appendChild(cell4);
+            } else {
+              row.appendChild(cell5);
+            }
+            tbody.appendChild(row);
+          }
+          if (dictDataDevisi[index]["level"] == 10) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["penerimaan"] == 1) {
+              row.appendChild(cell3);
+            } else {
+              row.appendChild(cell2);
+            }
+            tbody.appendChild(row);
+          }
+          if (dictDataDevisi[index]["level"] == 9) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["delivery"] == 1) {
+              row.appendChild(cell3);
+            } else {
+              row.appendChild(cell2);
+            }
+            tbody.appendChild(row);
+          }
+          if (dictDataDevisi[index]["level"] == 8) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["inbound"] == 1) {
+              row.appendChild(cell3);
+            } else {
+              row.appendChild(cell2);
+            }
+            tbody.appendChild(row);
+          }
+          if (dictDataDevisi[index]["level"] == 7) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["purchasing"] == 1) {
+              row.appendChild(cell3);
+            } else {
+              row.appendChild(cell2);
+            }
+            tbody.appendChild(row);
+          }
+          if (dictDataDevisi[index]["level"] == 6) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["onlineShop"] == 1) {
+              row.appendChild(cell3);
+            } else {
+              row.appendChild(cell2);
+            }
+            tbody.appendChild(row);
+          }
+          if (dictDataDevisi[index]["level"] == 5) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["pindahLok"] == 1) {
+              row.appendChild(cell3);
+            } else {
+              row.appendChild(cell2);
+            }
+            tbody.appendChild(row);
+          }
+          if (dictDataDevisi[index]["level"] == 4) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["stok"] == 1) {
+              row.appendChild(cell3);
+            } else {
+              row.appendChild(cell2);
+            }
+            tbody.appendChild(row);
+          }
+          if (dictDataDevisi[index]["level"] == 3) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["reffiler"] == 1) {
+              row.appendChild(cell3);
+            } else {
+              row.appendChild(cell2);
+            }
+            tbody.appendChild(row);
+          }
+          if (dictDataDevisi[index]["level"] == 2) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["packing"] == 1) {
+              row.appendChild(cell3);
+            } else {
+              row.appendChild(cell2);
+            }
+            tbody.appendChild(row);
+          }
+          if (dictDataDevisi[index]["level"] == 1) {
+            row.appendChild(cell1);
+            if (dictDataLvl[0]["picking"] == 1) {
+              row.appendChild(cell3);
+            } else {
+              row.appendChild(cell2);
+            }
+            tbody.appendChild(row);
+          }
+        });
+      }
+
+      function exeDashboard() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+
+      function exeBack() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+      function refresh() {
+        //location.href="scan_barang.html?namalogin="+user+"&level="+level
+        document.location.reload(true);
+      }
+      function exeLogout() {
+        location.href = "index.html";
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 14px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <a onclick="exeBack()"
+          ><i
+            class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+            style="font-size: 25px"
+          ></i
+        ></a>
+        <div>
+          <h5 style="line-height: 20px; color: white">ADMIN IGN</h5>
+          <h6 style="line-height: 0px; color: white">Inti Guna Nusantara</h6>
+        </div>
+      </div>
+      <div>
+        <a class="" data-bs-toggle="dropdown" href="">
+          <i
+            class="fas fa-bars fa-sm fa-fw mr-3 text-white"
+            style="font-size: 28px"
+          ></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="exeDashboard()">
+              <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>Dashboard
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item active" onclick="exeBack()">
+              <i
+                class="fas fas fa-clipboard-list fa-sm fa-fw m-2 text-black"
+              ></i
+              >Home
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="table-responsive-md">
+        <table class="table" id="listBarang">
+          <thead>
+            <tr>
+              <th>Devisi</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>

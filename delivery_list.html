@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Delivery</title>
+
+    <link href="asset/all.min.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="asset/css/flatpickr.min.css" rel="stylesheet" />
+    <link href="asset/css/nunito.css" rel="stylesheet" />
+    <link href="asset/css/bootstrap-select.min.css" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+
+    <!-- Custom styles for this template-->
+    <link href="asset/sb-admin-2.min.css" rel="stylesheet" />
+    <script src="asset/jquery.min.js"></script>
+    <script src="asset/jquery.easing.min.js"></script>
+    <script src="asset/bootstrap.bundle.min.js"></script>
+    <script src="asset/sb-admin-2.min.js"></script>
+    <script src="asset/moment.js"></script>
+    <script src="asset/custom.js"></script>
+    <script src="asset/bootstrap-select.min.js"></script>
+    <script src="asset/flatpickr.js"></script>
+    <script src="asset/tempus-dominus.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="./API.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript" charset="utf-8">
+      var noso = GetURLParameter("noso");
+      var number = GetURLParameter("nopack");
+      document.addEventListener("deviceready", onDeviceReady, false);
+
+      function onDeviceReady() {
+        getList();
+      }
+
+      //----------------------------------------------------------------------------------------------------------------------------------------
+
+      function getList() {
+        let xhr = new XMLHttpRequest();
+        xhr.open(
+          "GET",
+          UrlApi + "/nug_api/getDSODeliver?noso=" + noso + "&nopack=" + number
+        );
+        xhr.setRequestHeader(
+          "Content-Type",
+          "application/x-www-form-urlencoded"
+        );
+        let data = "&noso=" + noso;
+        //console.log(data)
+        xhr.send(data);
+        xhr.onload = function () {
+          //console.log(this.responseText);
+          var obj = JSON.parse(this.responseText);
+          var dataMain = obj.data.rows;
+          var total = obj.data.total;
+          var packer = dataMain[0]["stat3"];
+          var customer = dataMain[0]["namacus"];
+          document.getElementById("so").innerHTML = "SO : " + noso;
+          document.getElementById("packer").innerHTML = "PACKER : " + packer;
+          document.getElementById("customer").innerHTML =
+            "CUSTOMER : " + customer;
+          document.getElementById("nopack").innerHTML =
+            "Nomor Pack : " + number;
+          document.getElementById("total").innerHTML = "Total Item : " + total;
+
+          var theTabel = document.getElementById("listBarang");
+          theTabel.removeChild(theTabel.getElementsByTagName("tbody")[0]);
+          var tbody = document.createElement("tbody");
+          theTabel.appendChild(tbody);
+          for (var i = 0; i < dataMain.length; i++) {
+            var row = document.createElement("tr");
+            var cell1 = document.createElement("td");
+            var cell2 = document.createElement("td");
+            var cell3 = document.createElement("td");
+            cell1.innerHTML = dataMain[i]["namabarang"];
+            cell2.innerHTML = dataMain[i]["jumlahbarang"];
+            cell3.innerHTML = dataMain[i]["satuan"];
+            row.appendChild(cell1);
+            row.appendChild(cell2);
+            row.appendChild(cell3);
+            tbody.appendChild(row);
+          }
+        };
+      }
+
+      function exeDashboard() {
+        location.href = "dashboard.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeHome() {
+        location.href = "delivery.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeBack() {
+        location.href = "delivery.html?namalogin=" + user + "&level=" + level;
+      }
+      function exeRefresh() {
+        //location.href="scan_barang.html?namalogin="+user+"&level="+level
+        document.location.reload(true);
+      }
+    </script>
+  </head>
+
+  <body id="page-top">
+    <div
+      style="
+        width: 100%;
+        display: flex;
+        background-image: linear-gradient(
+          to right,
+          rgb(34, 151, 238),
+          rgb(66, 215, 81)
+        );
+        padding: 16px 14px;
+        box-shadow: 0px 0px 10px 0px rgb(188, 188, 188);
+        align-items: center;
+      "
+    >
+      <div style="width: 100%; display: flex; align-items: center; gap: 12px">
+        <a onclick="exeBack()"
+          ><i
+            class="fas fas fa-arrow-left fa-sm fa-fw m-2 text-white"
+            style="font-size: 25px"
+          ></i
+        ></a>
+        <div>
+          <h5 style="line-height: 20px; color: white">DELIVERY</h5>
+          <h6 style="line-height: 0px; color: white">List Delivery</h6>
+        </div>
+      </div>
+      <div>
+        <a class="" data-bs-toggle="dropdown" href="">
+          <i
+            class="fas fa-bars fa-sm fa-fw mr-3 text-white"
+            style="font-size: 28px"
+          ></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a class="dropdown-item" onclick="exeDashboard()">
+              <i class="fas fa-home fa-sm fa-fw m-2 text-black"></i>Dashboard
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item active" onclick="exeHome()">
+              <i
+                class="fas fas fa-clipboard-list fa-sm fa-fw m-2 text-black"
+              ></i
+              >Home
+            </a>
+          </li>
+        </ul>
+      </div>
+      <!-- <i class="fas fa fa-sign-out fa-sm fa-fw mr-3 text-white" style="font-size: 24px;"></i> -->
+    </div>
+    <p id="so" class="styleSO"></p>
+    <div
+      style="
+        display: grid;
+        grid-template-columns: 100%;
+        gap: 100%;
+        padding: 20px 24px;
+        text-align: start;
+        margin: auto;
+      "
+    >
+      <div
+        style="
+          padding: 20px 20px;
+          box-shadow: 2px 6px 10px 2px rgb(215, 215, 215);
+          border-radius: 8px;
+        "
+      >
+        <p id="packer" class="styleNamabrg"></p>
+        <p id="customer" class="styleNamabrg"></p>
+        <p id="nopack" class="styleOrder"></p>
+        <p id="total" class="styleOrder"></p>
+      </div>
+    </div>
+    <div>
+      <div class="card-body">
+        <div class="table-responsive-md">
+          <table class="table" id="listBarang">
+            <thead>
+              <tr>
+                <th>Nama Barang</th>
+                <th>Jumlah Order</th>
+                <th>Satuan</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div></div>
+    </div>
+  </body>
+</html>
